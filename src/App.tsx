@@ -1,14 +1,12 @@
-import './App.css'
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 
-function App() {
-
+const App = () => {
   return (
-    <>
-      <h1 className="text-3xl text-green-500 font-bold">
-      Midori yoroshiku
-      </h1>
-    </>
-  )
-}
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;
