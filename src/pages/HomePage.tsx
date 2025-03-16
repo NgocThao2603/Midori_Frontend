@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
   const { lessonRefs } = useLessonScroll();
 
   return (
-    <div className="p-6 items-center gap-8">
+    <div className="px-6 items-center gap-8">
       {lessonsData.map((lesson) => (
         <div
           key={lesson.title}
