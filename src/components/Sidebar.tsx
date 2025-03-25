@@ -1,17 +1,19 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import Button from "./Button";
 
 const Sidebar = () => {
-  const [activeItem, setActiveItem] = useState("Bài học");
+  const location = useLocation();
+  const [activeItem, setActiveItem] = useState(location.pathname);
 
   const menuItems = [
-    "Bài học",
-    "Học cụm từ",
-    "Luyện dịch",
-    "Luyện nghe",
-    "Xếp hạng",
-    "Kết quả",
-    "Học nhóm",
+    { name: "Bài học", path: "/" },
+    { name: "Học cụm từ", path: "/learn-phrase/1" },
+    { name: "Luyện dịch", path: "/translate" },
+    { name: "Luyện nghe", path: "/listen" },
+    { name: "Xếp hạng", path: "/ranking" },
+    { name: "Kết quả", path: "/result" },
+    { name: "Học nhóm", path: "/group" },
   ];
 
   return (
@@ -19,12 +21,9 @@ const Sidebar = () => {
       <h1 className="text-secondary ml-2 font-bold text-4xl mb-6">Midori</h1>
       <nav className="flex flex-col gap-2">
         {menuItems.map((item) => (
-          <Button
-            key={item}
-            text={item}
-            active={activeItem === item}
-            onClick={() => setActiveItem(item)}
-          />
+          <Link key={item.path} to={item.path} onClick={() => setActiveItem(item.path)}>
+            <Button text={item.name} active={activeItem === item.path} />
+          </Link>
         ))}
       </nav>
     </aside>

@@ -1,8 +1,8 @@
 import { createContext, useContext, useRef, RefObject, ReactNode } from "react";
 
 interface LessonScrollContextType {
-  lessonRefs: RefObject<{ [key: string]: HTMLDivElement | null }>;
-  scrollToLesson: (lesson: string) => void;
+  lessonRefs: RefObject<{ [key: number]: HTMLDivElement | null }>;
+  scrollToLesson: (lessonId: number) => void;
 }
 
 const LessonScrollContext = createContext<LessonScrollContextType | null>(null);
@@ -12,11 +12,11 @@ interface LessonScrollProviderProps {
 }
 
 export const LessonScrollProvider: React.FC<LessonScrollProviderProps> = ({ children }) => {
-  const lessonRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const lessonRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
-  const scrollToLesson = (lesson: string) => {
-    if (lessonRefs.current[lesson]) {
-      lessonRefs.current[lesson]?.scrollIntoView({ behavior: "smooth", block: "center" });
+  const scrollToLesson = (lessonId: number) => {
+    if (lessonRefs.current[lessonId]) {
+      lessonRefs.current[lessonId]?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
 
