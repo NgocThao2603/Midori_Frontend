@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import { Tabs, Tab } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
-import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import VocabCard from "../components/learn-phrase/VocabCard";
 import PhraseCard from "../components/learn-phrase/PhraseCard";
 
@@ -12,22 +14,10 @@ interface Vocabulary {
   kana: string;
   word_type: string;
   meaning: string[];
+  phrases: Phrase[];
 }
 
-const vocabList: Vocabulary[] = [
-  { id: 1, kanji: "男性", hanviet: "Nam tính", kana: "だんせい", word_type: "Danh từ", meaning: ["nam giới", "đàn ông", "giới tính nam"] },
-  { id: 2, kanji: "女性", hanviet: "Nữ tính", kana: "じょせい", word_type: "Danh từ", meaning: ["nữ giới", "phụ nữ", "giới tính nữ"] },
-  { id: 3, kanji: "高齢", hanviet: "Cao linh", kana: "こうれい", word_type: "Danh từ", meaning: ["cao tuổi", "lớn tuổi"] },
-  { id: 4, kanji: "友人", hanviet: "Hữu nhân", kana: "ゆうじん", word_type: "Danh từ", meaning: ["bạn bè", "bạn thân"] },
-  { id: 5, kanji: "仲", hanviet: "Trọng", kana: "なか", word_type: "Danh từ", meaning: ["quan hệ", "mối quan hệ"] },
-  { id: 6, kanji: "出身", hanviet: "Xuất thân", kana: "しゅっしん", word_type: "Danh từ", meaning: ["quê quán", "xuất thân"] },
-  { id: 7, kanji: "成長", hanviet: "Thành trưởng", kana: "せいちょう", word_type: "Danh từ", meaning: ["sự trưởng thành", "tăng trưởng"] },
-  { id: 8, kanji: "成功", hanviet: "Thành công", kana: "せいこう", word_type: "Danh từ", meaning: ["thành công"] },
-  { id: 9, kanji: "失敗", hanviet: "Thất bại", kana: "しっぱい", word_type: "Danh từ", meaning: ["thất bại", "không thành công"] },
-  { id: 10, kanji: "準備", hanviet: "Chuẩn bị", kana: "じゅんび", word_type: "Danh từ", meaning: ["chuẩn bị", "sẵn sàng"] },
-];
-
-interface PhraseCardProps {
+interface Phrase {
   id: number;
   vocab_id: number;
   phrase: string;
@@ -38,77 +28,69 @@ interface PhraseCardProps {
   meaning: string;
 }
 
-const phrases: PhraseCardProps[] = [
-  {
-    id: 1,
-    vocab_id: 1,
-    main_word: "男性",
-    phrase: "男性的",
-    kana: "だんせいてき",
-    prefix: "",
-    suffix: "的",
-    meaning: "Có tính đàn ông, nam tính.",
-  },
-  {
-    id: 2,
-    vocab_id: 1,
-    main_word: "男性",
-    phrase: "男性用",
-    kana: "だんせいよう",
-    prefix: "",
-    suffix: "用",
-    meaning: "Dành cho nam giới.",
-  },
-  {
-    id: 3,
-    vocab_id: 2,
-    main_word: "女性",
-    phrase: "女性向け",
-    kana: "じょせいむけ",
-    prefix: "",
-    suffix: "向け",
-    meaning: "Phù hợp với phụ nữ.",
-  },
-];
-
 const LearnPhrase: React.FC = () => {
+  const { lessonId } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [vocabList, setVocabList] = useState<Vocabulary[]>([]);
+  const [flashcards, setFlashcards] = useState<{ type: "vocab" | "phrase"; data: Vocabulary | Phrase }[]>([]);
+  const [shuffledFlashcards, setShuffledFlashcards] = useState<{ type: "vocab" | "phrase"; data: Vocabulary | Phrase }[]>([]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newIndex: number) => {
     setFlipped({});
     setTabIndex(newIndex);
-    setCurrentIndex(0); 
+    setCurrentIndex(0);
   };
 
-  const flashcards = vocabList.flatMap((vocab) => {
-    const relatedPhrases = phrases
-      .filter((phrase) => phrase.vocab_id === vocab.id)
-      .map((phrase) => ({
-        type: "phrase",
-        data: phrase,
-      }));
-
-    return [{ type: "vocab", data: vocab }, ...relatedPhrases];
-  });
-
-  const [shuffledFlashcards, setShuffledFlashcards] = useState(flashcards);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get<Vocabulary[]>(`http://localhost:3000/api/vocabularies/lesson/${lessonId}`);
+        console.log("Fetched response:", response);
   
-  const shuffleFlashcards = () => {
-    // Chỉ trộn danh sách từ vựng
-    const shuffledVocabList = [...vocabList].sort(() => Math.random() - 0.5);
+        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+          console.warn("No valid data received");
+          return;
+        }
   
-    // Xây dựng lại danh sách flashcards với từ vựng đã trộn
-    const shuffledFlashcards = shuffledVocabList.flatMap((vocab) => {
-      const relatedPhrases = phrases
-        .filter((phrase) => phrase.vocab_id === vocab.id)
-        .map((phrase) => ({
-          type: "phrase",
-          data: phrase,
+        // Đảm bảo mỗi phrase có vocab_id ngay khi lấy dữ liệu
+        const newVocabList = response.data.map((vocab) => ({
+          ...vocab,
+          phrases: vocab.phrases?.map((phrase) => ({ ...phrase, vocab_id: vocab.id })) || [],
         }));
   
-      return [{ type: "vocab", data: vocab }, ...relatedPhrases];
+        const newFlashcards = newVocabList.flatMap((vocab) => [
+          { type: "vocab" as const, data: vocab },
+          ...vocab.phrases.map((phrase) => ({ type: "phrase" as const, data: phrase })),
+        ]);
+  
+        setVocabList(newVocabList);
+        setFlashcards(newFlashcards);
+        setShuffledFlashcards([...newFlashcards]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [lessonId]);  
+
+  const shuffleFlashcards = () => {
+    if (!vocabList || vocabList.length === 0) {
+      console.warn("VocabList rỗng!");
+      return;
+    }
+  
+    const shuffledVocabList = [...vocabList].sort(() => Math.random() - 0.5);
+  
+    const shuffledFlashcards = shuffledVocabList.flatMap((vocab) => {
+      const relatedPhrases = vocab.phrases.map((phrase) => ({
+        type: "phrase" as const,
+        data: phrase,
+      }));
+  
+      return [{ type: "vocab" as const, data: vocab }, ...relatedPhrases];
     });
   
     setShuffledFlashcards(shuffledFlashcards);
@@ -117,10 +99,10 @@ const LearnPhrase: React.FC = () => {
   };  
 
   const resetFlashcards = () => {
-    setShuffledFlashcards(flashcards); // Quay về danh sách gốc
+    setShuffledFlashcards(flashcards);
     setCurrentIndex(0);
     setFlipped({});
-  };  
+  };
 
   const handleFlip = (type: "vocab" | "phrase", id: number) => {
     setFlipped((prev) => {
@@ -216,7 +198,7 @@ const LearnPhrase: React.FC = () => {
                 shuffledFlashcards[currentIndex].type === "vocab"
                   ? shuffledFlashcards[currentIndex].data.id === vocab.id
                   : shuffledFlashcards[currentIndex].type === "phrase" &&
-                    (shuffledFlashcards[currentIndex].data as PhraseCardProps).vocab_id === vocab.id;
+                    (shuffledFlashcards[currentIndex].data as Phrase).vocab_id === vocab.id;
 
               return (
                 <button
@@ -255,18 +237,23 @@ const LearnPhrase: React.FC = () => {
               <ArrowBackIos fontSize="large" className={currentIndex === 0 ? "text-gray-300" : "text-secondary"} />
             </button>
 
-            {shuffledFlashcards[currentIndex].type === "vocab" ? (
-              <VocabCard
-                flipped={flipped[`vocab_${shuffledFlashcards[currentIndex].data.id}`]}
-                onFlip={() => handleFlip("vocab", shuffledFlashcards[currentIndex].data.id)}
-                {...(shuffledFlashcards[currentIndex].data as Vocabulary)} // Ép kiểu chính xác cho VocabCard
-              />
+            {shuffledFlashcards.length > 0 && currentIndex >= 0 && currentIndex < shuffledFlashcards.length ? (
+              shuffledFlashcards[currentIndex] ? (
+                shuffledFlashcards[currentIndex].type === "vocab" ? (
+                  <VocabCard
+                    meanings={[]} flipped={flipped[`vocab_${shuffledFlashcards[currentIndex].data.id}`]}
+                    onFlip={() => handleFlip("vocab", shuffledFlashcards[currentIndex].data.id)}
+                    {...(shuffledFlashcards[currentIndex].data as Vocabulary)}                  />
+                ) : (
+                  <PhraseCard
+                    flipped={flipped[`phrase_${shuffledFlashcards[currentIndex].data.id}`]}
+                    onFlip={() => handleFlip("phrase", shuffledFlashcards[currentIndex].data.id)}
+                    {...(shuffledFlashcards[currentIndex].data as Phrase)}
+                  />
+                )
+              ) : null
             ) : (
-              <PhraseCard
-                flipped={flipped[`phrase_${shuffledFlashcards[currentIndex].data.id}`]}
-                onFlip={() => handleFlip("phrase", shuffledFlashcards[currentIndex].data.id)}
-                {...(shuffledFlashcards[currentIndex].data as PhraseCardProps)} // Ép kiểu chính xác cho PhraseCard
-              />
+              <p>Loading...</p>
             )}
             <button onClick={handleNext} disabled={currentIndex === shuffledFlashcards.length - 1} className="border border-white bg-gray-50 hover:border-transparent focus:outline-none hover:bg-gray-100 disabled:hover:bg-gray-50">
               <ArrowForwardIos fontSize="large" className={currentIndex === shuffledFlashcards.length - 1 ? "text-gray-300" : "text-secondary"} />

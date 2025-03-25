@@ -8,12 +8,12 @@ const Sidebar = () => {
 
   const menuItems = [
     { name: "Bài học", path: "/" },
-    { name: "Học cụm từ", path: "/learn-phrase" },
-    { name: "Luyện dịch", path: "" },
-    { name: "Luyện nghe", path: "" },
-    { name: "Xếp hạng", path: "" },
-    { name: "Kết quả", path: "" },
-    { name: "Học nhóm", path: "" },
+    { name: "Học cụm từ", path: "/learn-phrase/1" },
+    { name: "Luyện dịch", path: "/translate" },
+    { name: "Luyện nghe", path: "/listen" },
+    { name: "Xếp hạng", path: "/ranking" },
+    { name: "Kết quả", path: "/result" },
+    { name: "Học nhóm", path: "/group" },
   ];
 
   return (

@@ -1,42 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { List, ListItemButton, ListItemText, Collapse } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useLessonScroll } from "../contexts/LessonScrollContext";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const lessons = [
-  {
-    chapter: "Chương 1",
-    lessons: [
-      { title: "Bài 1A" },
-      { title: "Bài 1B" },
-      { title: "Bài 1C" },
-    ],
-  },
-  {
-    chapter: "Chương 2",
-    lessons: [
-      { title: "Bài 2A" },
-      { title: "Bài 2B" },
-      { title: "Bài 2C" },
-    ],
-  },
-];
+interface Lesson {
+  id: number;
+  title: string;
+}
 
-const LessonList = () => {
-  const [openChapters, setOpenChapters] = useState<{ [key: string]: boolean }>({});
+interface Chapter {
+  id: number;
+  title: string;
+  level: string;
+  lessons: Lesson[];
+}
+
+const LessonList = ({ level }: { level: string }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHome = location.pathname === "/";
+  const [openChapters, setOpenChapters] = useState<{ [key: number]: boolean }>({});
   const { scrollToLesson } = useLessonScroll();
+  const [chapters, setChapters] = useState<Chapter[]>([]);
 
-  const handleToggleChapter = (chapter: string) => {
+  const handleToggleChapter = (chapter: number) => {
     setOpenChapters((prev) => ({ ...prev, [chapter]: !prev[chapter] }));
   };
+
+  useEffect(() => {
+    const fetchChapters = async () => {
+      try {
+        const { data } = await axios.get<Chapter[]>(`http://localhost:3000/api/chapters`, {
+          params: { level }
+        });
+        setChapters(data);
+      } catch (error) {
+        console.error("Lỗi khi fetch dữ liệu:", error);
+      }
+    };
+
+    fetchChapters();
+  }, [level]);
+
+  const handleLessonClick = (lessonId: number) => {
+    if (location.pathname === "/") {
+      scrollToLesson(lessonId);
+    } else {
+      let targetPath = `/learn-phrase/${lessonId}`; // Mặc định là trang Learn Phrase
+  
+      if (location.pathname.startsWith("/learn-kanji")) {
+        targetPath = `/learn-kanji/${lessonId}`;
+      } else if (location.pathname.startsWith("/learn-grammar")) {
+        targetPath = `/learn-grammar/${lessonId}`;
+      }
+  
+      navigate(targetPath);
+    }
+  };  
 
   return (
     <div className="bg-green_pastel rounded-xl p-4 border w-80">
       <p className="text-lg font-bold text-center text-secondary mb-4">Danh sách bài</p>
-      <div className="bg-white rounded-xl max-h-[35vh] overflow-y-auto scrollbar-hide">
+      <div className={`bg-white rounded-xl overflow-y-auto scrollbar-hide ${isHome ? "max-h-[35vh]" : "max-h-[75vh]"}`}>
         <List sx={{ padding: 0 }}>
-          {lessons.map((chapter) => (
-            <div key={chapter.chapter}>
+          {chapters.map((chapter) => (
+            <div key={chapter.id}>
               <ListItemButton
                 sx={{
                   display: "flex",
@@ -45,18 +75,18 @@ const LessonList = () => {
                   color: "#008000",
                   borderRadius: "12px",
                 }}
-                onClick={() => handleToggleChapter(chapter.chapter)}
+                onClick={() => handleToggleChapter(chapter.id)}
               >
-                <ListItemText primary={chapter.chapter} />
-                {openChapters[chapter.chapter] ? <ExpandLess /> : <ExpandMore />}
+                <ListItemText primary={chapter.title} />
+                {openChapters[chapter.id] ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
-              <Collapse in={openChapters[chapter.chapter]} timeout="auto" unmountOnExit>
+              <Collapse in={openChapters[chapter.id]} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   {chapter.lessons.map((lesson) => (
                     <ListItemButton
                       key={lesson.title}
                       className="w-full"
-                      onClick={() => scrollToLesson(lesson.title)}
+                      onClick={() => handleLessonClick(lesson.id)}
                       sx={{
                         paddingLeft: "28px",
                         borderRadius: "12px",
