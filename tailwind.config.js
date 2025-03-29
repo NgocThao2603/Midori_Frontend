@@ -9,6 +9,7 @@ export default {
         green_border: "#139139",
         green_bg: "#8AD459",
         green_pastel: "#E8F5E9",
+        green_pastel2: "rgb(246, 250, 246)",
         cyan_border: "#0F8480",
         cyan_pastel: "#F2FDFD",
         cyan_text: "#0F8480"

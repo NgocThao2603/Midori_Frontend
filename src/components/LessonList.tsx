@@ -20,7 +20,7 @@ interface Chapter {
 const LessonList = ({ level }: { level: string }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isHome = location.pathname === "/";
+  const isHome = location.pathname === "/home";
   const [openChapters, setOpenChapters] = useState<{ [key: number]: boolean }>({});
   const { scrollToLesson } = useLessonScroll();
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -45,7 +45,7 @@ const LessonList = ({ level }: { level: string }) => {
   }, [level]);
 
   const handleLessonClick = (lessonId: number) => {
-    if (location.pathname === "/") {
+    if (location.pathname === "/home") {
       scrollToLesson(lessonId);
     } else {
       let targetPath = `/learn-phrase/${lessonId}`; // Mặc định là trang Learn Phrase
