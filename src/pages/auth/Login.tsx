@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { TextField, Button } from "@mui/material";
 import Header from "../../components/Header";
 import { loginUser } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FormData {
   email: string;
@@ -17,6 +18,7 @@ interface FormErrors {
 }
 
 const Login = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
@@ -40,12 +42,12 @@ const Login = () => {
         if (!value) return "Email không được để trống.";
         if (!validateEmail(value)) return "Email không hợp lệ.";
         return "";
-        case "password":
-          if (!value) return "Mật khẩu không được để trống.";
-          if (!validator.isStrongPassword(value, { minLength: 6, minNumbers: 1, minSymbols: 1 })) {
-            return "Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ cái viết hoa, viết thường, số và ký tự đặc biệt.";
-          }
-          return "";
+      case "password":
+        if (!value) return "Mật khẩu không được để trống.";
+        if (!validator.isStrongPassword(value, { minLength: 6, minNumbers: 1, minSymbols: 1 })) {
+          return "Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ cái viết hoa, viết thường, số và ký tự đặc biệt.";
+        }
+        return "";
       default:
         return "";
     }
@@ -90,15 +92,18 @@ const Login = () => {
 
     try {
       const response = await loginUser(formData);
-      if (response?.token) {
-        localStorage.setItem("token", response.token); // Lưu token vào localStorage
+      const token = response?.token;
+    
+      if (token) {
+        localStorage.setItem("token", token);
+        toast.success("Đăng nhập thành công!");
+        login(token);
+        navigate("/home");
+      } else {
+        toast.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
       }
-      toast.success('Đăng nhập thành công!');
-      navigate('/home');
     } catch (error) {
-      toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.');
-    } finally {
-      setIsSubmitting(false);
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại sau.");
     }
   };
   return (
@@ -124,13 +129,6 @@ const Login = () => {
             error={Boolean(formErrors.email)}
             helperText={formErrors.email}
             className="bg-white"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&:hover:not(.Mui-focused) fieldset": {
-                  borderColor: "#139139",
-                },
-              },
-            }}
           />
           <TextField
             label="Mật khẩu *"
@@ -145,13 +143,6 @@ const Login = () => {
             error={Boolean(formErrors.password)}
             helperText={formErrors.password}
             className="bg-white"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&:hover:not(.Mui-focused) fieldset": {
-                  borderColor: "#139139",
-                },
-              },
-            }}
           />
           
           <div className="flex justify-between items-center text-sm text-secondary mt-2">

@@ -1,22 +1,36 @@
 import { BrowserRouter } from "react-router-dom";
-import { useEffect, useState } from "react";
 import AppRoutes from "./routes/AppRoutes";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+const theme = createTheme({
+  components: {
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            "&:hover:not(.Mui-focused) fieldset": {
+              borderColor: "#139139",
+            },
+          },
+        },
+      },
+    },
+  },
+});
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Kiểm tra trạng thái đăng nhập trong localStorage
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
   return (
-    <BrowserRouter>
-      <AppRoutes isLoggedIn={isLoggedIn}/>
-      <ToastContainer />
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes/>
+          <ToastContainer />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

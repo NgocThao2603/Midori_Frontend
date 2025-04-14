@@ -1,12 +1,13 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface PublicRouteProps {
-  isLoggedIn: boolean;
   children: React.ReactNode;
 }
 
-const PublicRoute: React.FC<PublicRouteProps> = ({ isLoggedIn, children }) => {
+const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+  const { isLoggedIn } = useAuth();
   return isLoggedIn ? <Navigate to="/home" replace /> : <>{children}</>;
 };
 

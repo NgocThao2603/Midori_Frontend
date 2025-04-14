@@ -1,45 +1,30 @@
 import { Routes, Route } from "react-router-dom";
 import PublicRoute from "../components/PublicRoute";
+import ProtectedRoute from "../components/ProtectedRoute";
 import Layout from "../pages/Layout";
 import HomePage from "../pages/HomePage";
 import LearnPhrase from "../pages/LearnPhrase";
 import LandingPage from "../pages/LandingPage";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import { useAuth } from "../contexts/AuthContext";
 
-interface AppRoutesProps {
-  isLoggedIn: boolean;
-}
+const  AppRoutes = () => {
+  const isLoggedIn = useAuth();
 
-const AppRoutes: React.FC<AppRoutesProps> = ({ isLoggedIn }) => {
   return (
     <>
       <Routes>
-        <Route
-          path="/"
+      <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route 
           element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <LandingPage />
-            </PublicRoute>
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
           }
-        />
-        <Route
-          path="/login"
-          element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <Register />
-            </PublicRoute>
-          }
-        />
-        <Route element={<Layout />}>
+        >
           <Route path="/home" element={<HomePage />}></Route>
           <Route path="/learn-phrase/:lessonId" element={<LearnPhrase/>}></Route>
         </Route>

@@ -4,6 +4,8 @@ import { Avatar, IconButton, Menu, MenuItem, Select, FormControl, InputLabel } f
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Bell } from "lucide-react";
 import avatar from "../assets/avatar.jpg";
+import { logoutUser } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 interface HeaderProps {
   level: string;
@@ -11,6 +13,7 @@ interface HeaderProps {
   isLoggedIn: boolean;
 }
 const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
@@ -34,10 +37,15 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
     navigate("/profile");
   };
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
     handleClose();
-    localStorage.removeItem("token");
-    navigate("/");
+    try {
+      await logoutUser();
+      logout(); 
+      navigate("/");
+    } catch (error) {
+      console.error("Logout thất bại:", error);
+    }
   };
 
   if (!isLoggedIn) {

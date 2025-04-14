@@ -9,7 +9,8 @@ import { useState } from "react";
 const Layout = () => {
   const location = useLocation();
   const isHome = location.pathname === "/home";
-  const [level, setLevel] = useState<string>("N3");
+  const [level, setLevel] = useState<string>("N2");
+  const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
 
   return (
     <LessonScrollProvider>
@@ -20,7 +21,7 @@ const Layout = () => {
           <div className="col-span-2 flex-shrink-0">
             <Sidebar />
           </div>
-          <main className="col-span-6 p-6 mt-12 z-10"><Outlet /></main>
+          <main className="col-span-6 p-6 mt-12 z-10"><Outlet context={{ activeChapterId, level }}/></main>
           <div className="col-span-2 mt-20 mr-10 p-4">
             <div className="fixed">
               {isHome && (
@@ -28,7 +29,7 @@ const Layout = () => {
                   <Calendar />
                 </div>
               )}
-              <LessonList level={level}/>
+              <LessonList level={level} onChapterToggle={(id) => setActiveChapterId(id)}/>
             </div>
           </div>
         </div>
