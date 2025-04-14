@@ -3,7 +3,7 @@ import { List, ListItemButton, ListItemText, Collapse } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useLessonScroll } from "../contexts/LessonScrollContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { fetchChapters } from "../services/api"; 
 
 interface Lesson {
   id: number;
@@ -17,35 +17,58 @@ interface Chapter {
   lessons: Lesson[];
 }
 
-const LessonList = ({ level }: { level: string }) => {
+const LessonList = ({ level, onChapterToggle }: { level: string; onChapterToggle: (chapterId: number) => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isHome = location.pathname === "/";
+  const isHome = location.pathname === "/home";
   const [openChapters, setOpenChapters] = useState<{ [key: number]: boolean }>({});
   const { scrollToLesson } = useLessonScroll();
   const [chapters, setChapters] = useState<Chapter[]>([]);
 
-  const handleToggleChapter = (chapter: number) => {
-    setOpenChapters((prev) => ({ ...prev, [chapter]: !prev[chapter] }));
-  };
+  const handleToggleChapter = (chapterId: number) => {
+    setOpenChapters((prev) => {
+      const isCurrentlyOpen = !!prev[chapterId];
+
+      if (isCurrentlyOpen) {
+        return { [chapterId]: false };
+      }
+
+      onChapterToggle(chapterId);
+      return { [chapterId]: true };
+    });
+  };  
 
   useEffect(() => {
-    const fetchChapters = async () => {
+    Object.keys(openChapters).forEach((chapterId) => {
+      const chapter = chapters.find(ch => ch.id === parseInt(chapterId));
+      if (chapter && openChapters[parseInt(chapterId)]) {
+        const firstLesson = chapter.lessons[0];
+        if (firstLesson) {
+          scrollToLesson(firstLesson.id);
+        }
+      }
+    });
+  }, [openChapters, chapters, scrollToLesson]);
+
+  useEffect(() => {
+    const getChapters = async () => {
       try {
-        const { data } = await axios.get<Chapter[]>(`http://localhost:3000/api/chapters`, {
-          params: { level }
-        });
+        const data = await fetchChapters(level);
         setChapters(data);
+
+        if (data.length > 0) {
+          onChapterToggle(data[0].id);
+        }
       } catch (error) {
         console.error("Lỗi khi fetch dữ liệu:", error);
       }
     };
 
-    fetchChapters();
+    getChapters();
   }, [level]);
 
   const handleLessonClick = (lessonId: number) => {
-    if (location.pathname === "/") {
+    if (location.pathname === "/home") {
       scrollToLesson(lessonId);
     } else {
       let targetPath = `/learn-phrase/${lessonId}`; // Mặc định là trang Learn Phrase

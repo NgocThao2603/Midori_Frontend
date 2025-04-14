@@ -1,32 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import { Tabs, Tab } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import VocabCard from "../components/learn-phrase/VocabCard";
 import PhraseCard from "../components/learn-phrase/PhraseCard";
-
-interface Vocabulary {
-  id: number;
-  kanji: string;
-  hanviet: string;
-  kana: string;
-  word_type: string;
-  meaning: string[];
-  phrases: Phrase[];
-}
-
-interface Phrase {
-  id: number;
-  vocab_id: number;
-  phrase: string;
-  main_word: string;
-  kana?: string;
-  prefix?: string;
-  suffix?: string;
-  meaning: string;
-}
+import { fetchVocabulariesByLesson, Vocabulary, Phrase } from "../services/api";
 
 const LearnPhrase: React.FC = () => {
   const { lessonId } = useParams();
@@ -45,36 +24,15 @@ const LearnPhrase: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await axios.get<Vocabulary[]>(`http://localhost:3000/api/vocabularies/lesson/${lessonId}`);
-        console.log("Fetched response:", response);
-  
-        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-          console.warn("No valid data received");
-          return;
-        }
-  
-        // Đảm bảo mỗi phrase có vocab_id ngay khi lấy dữ liệu
-        const newVocabList = response.data.map((vocab) => ({
-          ...vocab,
-          phrases: vocab.phrases?.map((phrase) => ({ ...phrase, vocab_id: vocab.id })) || [],
-        }));
-  
-        const newFlashcards = newVocabList.flatMap((vocab) => [
-          { type: "vocab" as const, data: vocab },
-          ...vocab.phrases.map((phrase) => ({ type: "phrase" as const, data: phrase })),
-        ]);
-  
-        setVocabList(newVocabList);
-        setFlashcards(newFlashcards);
-        setShuffledFlashcards([...newFlashcards]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+      const { vocabList, flashcards } = await fetchVocabulariesByLesson(lessonId);
+
+      setVocabList(vocabList);
+      setFlashcards(flashcards);
+      setShuffledFlashcards([...flashcards]);
     };
-  
+
     fetchData();
-  }, [lessonId]);  
+  }, [lessonId]);
 
   const shuffleFlashcards = () => {
     if (!vocabList || vocabList.length === 0) {

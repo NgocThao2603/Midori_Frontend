@@ -1,31 +1,64 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import LessonSection from "../components/home/LessonSection";
 import { useLessonScroll } from "../contexts/LessonScrollContext";
-
-const lessonsData = [
-  {id:1, chapter: "Chương 1", title: "Bài 1A", doneStatus: [true, true, true, false] },
-  {id:2, chapter: "Chương 1", title: "Bài 1B", doneStatus: [false, false, false, false] },
-  {id:3, chapter: "Chương 1", title: "Bài 1C", doneStatus: [true, true, false, false] },
-  {id:4, chapter: "Chương 2", title: "Bài 2A", doneStatus: [false, true, false, false] },
-  {id:5, chapter: "Chương 2", title: "Bài 2B", doneStatus: [true, true, true, true] },
-  {id:6, chapter: "Chương 2", title: "Bài 2C", doneStatus: [false, false, false, true] },
-];
+import { getLessonStatuses, fetchChapters, Chapter } from "../services/api";
 
 const HomePage: React.FC = () => {
   const { lessonRefs } = useLessonScroll();
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [lessonStatuses, setLessonStatuses] = useState<Record<number, boolean[]>>({});
+  const { activeChapterId } = useOutletContext<{ activeChapterId: number | null; level: string }>();
+
+  useEffect(() => {
+    // Gọi cả hai API song song
+    const fetchData = async () => {
+      try {
+        const [chapterData, statusData] = await Promise.all([
+          fetchChapters("N2"),
+          getLessonStatuses(),
+        ]);
+    
+        const statusMap: Record<number, boolean[]> = {};
+        Object.entries(statusData).forEach(([lessonId, item]) => {
+          statusMap[Number(lessonId)] = [
+            item.phrase,
+            item.translate,
+            item.listen,
+            item.test,
+          ];
+        });
+    
+        setChapters(chapterData);
+        setLessonStatuses(statusMap);
+      } catch (error) {
+        console.error("Lỗi khi load dữ liệu:", error);
+      }
+    };    
+
+    fetchData();
+  }, []);
 
   return (
     <div className="px-6 items-center gap-8">
-      {lessonsData.map((lesson) => (
-        <div
-          key={lesson.title}
-          ref={(el) => {
-            if (el) lessonRefs.current[lesson.id] = el;
-          }}
-        >
-          <LessonSection chapter={lesson.chapter} title={lesson.title} doneStatus={lesson.doneStatus} />
-        </div>
-      ))}
+      {chapters
+        .filter((chapter) => chapter.id === activeChapterId)
+        .flatMap((chapter) =>
+          chapter.lessons.map((lesson) => (
+            <div
+              key={lesson.id}
+              ref={(el) => {
+                if (el) lessonRefs.current[lesson.id] = el;
+              }}
+            >
+              <LessonSection
+                chapter={chapter.title}
+                title={lesson.title}
+                doneStatus={lessonStatuses[lesson.id] || [false, false, false, false]}
+              />
+            </div>
+          ))
+        )}
     </div>
   );
 };

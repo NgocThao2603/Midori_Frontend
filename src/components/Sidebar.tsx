@@ -7,7 +7,7 @@ const Sidebar = () => {
   const [activeItem, setActiveItem] = useState(location.pathname);
 
   const menuItems = [
-    { name: "Bài học", path: "/" },
+    { name: "Bài học", path: "/home" },
     { name: "Học cụm từ", path: "/learn-phrase/1" },
     { name: "Luyện dịch", path: "/translate" },
     { name: "Luyện nghe", path: "/listen" },
