@@ -1,19 +1,27 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Button from "./Button";
+import mascot1 from "../assets/mascot1.png";
+import home from "../assets/home.png";
+import flashcard_logo from "../assets/flashcard_logo.png";
+import pencil from "../assets/pencil.webp";
+import headphones from "../assets/headphones.png";
+import test from "../assets/test.png";
+import leaderboard from "../assets/leaderboard.png";
+import result from "../assets/result.png";
 
 const Sidebar = () => {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState(location.pathname);
 
   const menuItems = [
-    { name: "Bài học", path: "/home" },
-    { name: "Học cụm từ", path: "/learn-phrase/1" },
-    { name: "Luyện dịch", path: "/translate" },
-    { name: "Luyện nghe", path: "/listen" },
-    { name: "Xếp hạng", path: "/ranking" },
-    { name: "Kết quả", path: "/result" },
-    { name: "Học nhóm", path: "/group" },
+    { name: "Bài học", path: "/home", icon: home },
+    { name: "Học cụm từ", path: "/learn-phrase/1", icon: flashcard_logo },
+    { name: "Luyện dịch", path: "/translate", icon: pencil },
+    { name: "Luyện nghe", path: "/listen", icon: headphones },
+    { name: "Làm bài test", path: "/test", icon: test },
+    { name: "Xếp hạng", path: "/ranking", icon: leaderboard },
+    { name: "Kết quả", path: "/result", icon: result },
   ];
 
   return (
@@ -22,10 +30,11 @@ const Sidebar = () => {
       <nav className="flex flex-col gap-2">
         {menuItems.map((item) => (
           <Link key={item.path} to={item.path} onClick={() => setActiveItem(item.path)}>
-            <Button text={item.name} active={activeItem === item.path} />
+            <Button img={item.icon} text={item.name} active={activeItem === item.path} />
           </Link>
         ))}
       </nav>
+      <img src={mascot1} alt="" className="fixed left-10 bottom-6 w-48 h-48"/>
     </aside>
   );
 };

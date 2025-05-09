@@ -53,6 +53,47 @@ export interface Flashcard {
   data: Vocabulary | Phrase;
 }
 
+export interface QuestionBase {
+  id: number;
+  lesson_id: number;
+  vocabulary_id: number | null;
+  phrase_id: number | null;
+  example_id: number | null;
+  question: string;
+  question_type: "choice" | "matching" | "sorting" | "fill_blank";
+  correct_answers: string[] | null;
+  hidden_part: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuestionChoice {
+  id: number;
+  question_id: number;
+  choice: string;
+  is_correct: boolean;
+}
+
+export interface QuestionChoiceType extends QuestionBase {
+  question_type: "choice" | "matching";
+  choices: QuestionChoice[];
+}
+
+export interface QuestionSortingType extends QuestionBase {
+  question_type: "sorting";
+  tokens: string[];
+}
+
+export interface QuestionFillBlankType extends QuestionBase {
+  question_type: "fill_blank";
+  blanks: string[];
+}
+
+export type Question =
+  | QuestionChoiceType
+  | QuestionSortingType
+  | QuestionFillBlankType;
+
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
   try {
@@ -152,5 +193,20 @@ export const fetchVocabulariesByLesson = async (lessonId: string | undefined): P
   } catch (error) {
     console.error("Error fetching data:", error);
     return { vocabList: [], flashcards: [] };
+  }
+};
+
+// Fetch câu hỏi theo lesson
+export const fetchPhraseQuestionsByLesson = async (lessonId: number): Promise<Question[]> => {
+  try {
+    const response = await api.get(`/questions`, {
+      params: {
+        lesson_id: lessonId
+      }
+    });
+    return response.data as Question[];
+  } catch (error) {
+    console.error("Error fetching phrase questions:", error);
+    return [];
   }
 };

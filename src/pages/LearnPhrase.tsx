@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Tabs, Tab } from "@mui/material";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
+import { Tabs, Tab, Button } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import VocabCard from "../components/learn-phrase/VocabCard";
 import PhraseCard from "../components/learn-phrase/PhraseCard";
 import { fetchVocabulariesByLesson, Vocabulary, Phrase } from "../services/api";
+import quoteIcon from "../assets/quote-icon.png";
 
 const LearnPhrase: React.FC = () => {
+  const navigate = useNavigate();
   const { lessonId } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
@@ -222,7 +224,34 @@ const LearnPhrase: React.FC = () => {
       
       {/* Luyện tập Tab */}
       {tabIndex === 1 && (
-        <div className="text-center text-gray-500 mt-4">Chức năng đang phát triển...</div>
+        <div className="flex flex-col items-center space-y-8">
+          <div className="relative border border-cyan_border rounded-xl p-4 bg-cyan_pastel text-cyan_text w-[100%] mt-12">
+            <img src={quoteIcon} alt="" className="absolute top-4 left-4 w-4 h-4"/>
+            <img src={quoteIcon} alt="" className="absolute bottom-4 right-4 w-4 h-4 rotate-180" />
+            <div className="py-6 px-8">
+              <p className="font-semibold text-xl">
+                Cùng Midori luyện tập với các câu hỏi đa dạng
+              </p>
+              <ul className="list-disc list-inside ml-2 mt-4 space-y-2">
+                <li>Thi nối từ</li>
+                <li>Đoán nghĩa đúng</li>
+                <li>Cách đọc sao ta?</li>
+              </ul>
+              <p className="mt-4 font-semibold text-xl">Thử thách trí nhớ của bạn!</p>
+            </div> 
+          </div>
+    
+          <Button
+            variant="contained"
+            onClick={() => navigate(`/practice-phrase/${lessonId}`)}
+            className="!bg-cyan_border hover:!bg-secondary !text-white !font-bold !text-xl !px-6 !py-4 !mt-6 !rounded-lg !focus:outline-none"
+            sx={{
+              "&:focus": { outline: "none", boxShadow: "none" },
+            }}
+          >
+            BẮT ĐẦU LUYỆN TẬP
+          </Button>
+        </div>
       )}
     </div>
   );

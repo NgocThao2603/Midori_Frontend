@@ -28,7 +28,7 @@ const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_ty
     <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
       {/* Front Side */}
       <div 
-        className="relative w-64 h-96 flex flex-col justify-center items-center rounded-xl border-2 bg-white text-cyan_text cursor-pointer" 
+        className="relative w-64 h-96 px-4 flex flex-col justify-center items-center rounded-xl border-2 bg-white text-cyan_text cursor-pointer" 
         onClick={() => onFlip(id)}
       >
         <p className="absolute top-4 left-6 text-2xl font-bold">{id}</p>
@@ -36,7 +36,7 @@ const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_ty
       </div>
       {/* Back Side */}
       <div 
-        className="relative w-64 h-96 flex flex-col justify-center items-center rounded-xl border-2 bg-white text-cyan_text cursor-pointer" 
+        className="relative w-64 h-96 px-4 flex flex-col justify-center items-center rounded-xl border-2 bg-white text-cyan_text cursor-pointer" 
         onClick={() => onFlip(id)}
       >
         <div className="absolute top-4 left-6 right-2 flex justify-between items-center">

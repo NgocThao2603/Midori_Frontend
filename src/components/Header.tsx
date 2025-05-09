@@ -3,7 +3,7 @@ import React, { SetStateAction, useState } from "react";
 import { Avatar, IconButton, Menu, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Bell } from "lucide-react";
-import avatar from "../assets/avatar.jpg";
+import avatar from "../assets/avatar.svg";
 import { logoutUser } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 
