@@ -6,6 +6,7 @@ import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutl
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { Question } from "../../services/api";
 import Choice from "./Choice";
+import Match from "./Match";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
 import { Button } from "@mui/material";
 
@@ -25,7 +26,7 @@ export default function Template({ questions, lessonId }: TemplateProps) {
     results,
     isChecked,
     setAnswer,
-    checkAnswers,
+    checkAnswer,
   } = useQuestionChecker(questions);
 
   const goToNext = () => {
@@ -45,7 +46,7 @@ export default function Template({ questions, lessonId }: TemplateProps) {
 
           let colorClass = "bg-gray-300";
 
-          if (isChecked) {
+          if (isChecked(questionId)) {
             if (result === "correct") {
               colorClass = "bg-secondary";
             } else if (result === "incorrect" && isAnswered) {
@@ -72,7 +73,7 @@ export default function Template({ questions, lessonId }: TemplateProps) {
         <CloseOutlinedIcon
           style={{ fontSize: 40 }}
           className="ml-4 cursor-pointer"
-          onClick={() => navigate(`/learn-phrase/${lessonId}`)}
+          onClick={() => navigate(`/learn-phrase/${lessonId}`, { replace: true })}
         />
       </div>
 
@@ -91,17 +92,28 @@ export default function Template({ questions, lessonId }: TemplateProps) {
                 questionTitle={question.question}
                 choices={question.choices}
                 selectedId={userAnswers[question.id] as number}
+                isChecked={isChecked(question.id)}
                 checkResult={results[question.id]}
-                isChecked={isChecked}
                 onSelect={(id) => setAnswer(question.id, id)}
               />
             )}
 
-            {!isChecked && (
+            {question.question_type === "matching" && (
+              <Match
+                questionTitle={question.question}
+                choices={question.choices}
+                selectedIds={userAnswers[question.id] as number[]}
+                isChecked={isChecked(question.id)}
+                checkResult={results[question.id]}
+                onSelect={(id) => setAnswer(question.id, id)}
+              />
+            )}
+
+            {!isChecked(question.id) && (
               <div className="mt-10 text-center">
                 <Button
                   variant="contained"
-                  onClick={checkAnswers}
+                  onClick={() => checkAnswer(question.id)}
                   className="!bg-cyan_border hover:!bg-secondary !text-white !font-bold !text-xl !px-6 !py-4 !mt-6 !rounded-lg !focus:outline-none"
                   sx={{
                     "&:focus": { outline: "none", boxShadow: "none" },
@@ -119,7 +131,7 @@ export default function Template({ questions, lessonId }: TemplateProps) {
       <div className="mt-4 left-auto">
         <button
           onClick={goToNext}
-          disabled={currentSlide === TOTAL_QUESTIONS - 1 || !isChecked}
+          disabled={currentSlide === TOTAL_QUESTIONS - 1 || !isChecked(questions[currentSlide]?.id)}
           className="fixed top-1/2 right-10 -translate-y-1/2 border-none bg-white text-secondary focus:outline-none disabled:text-gray-300"
         >
           <ArrowForwardIosOutlinedIcon style={{ fontSize: 72 }} />

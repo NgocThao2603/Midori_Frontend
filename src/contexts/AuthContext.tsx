@@ -24,7 +24,11 @@ const parseJwt = (token: string) => {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    // Check token from localStorage during initialization
+    const token = localStorage.getItem("token");
+    return !!token;
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");

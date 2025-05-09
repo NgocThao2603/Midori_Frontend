@@ -18,7 +18,6 @@ export default function Choice({ questionTitle, choices, onSelect, selectedId, c
       <div className="grid grid-cols-2 gap-6">
         {choices.map((choice, index) => {
           const isSelected = selectedId === choice.id;
-          const isDisabled = isChecked;
           const isCorrectChoice = choice.is_correct;
 
           let buttonStyle = "bg-white border-gray-300 text-cyan_text";
@@ -40,13 +39,13 @@ export default function Choice({ questionTitle, choices, onSelect, selectedId, c
           return (
             <button
               key={choice.id}
-              onClick={() => !isDisabled && onSelect(choice.id)}
+              onClick={() => !isChecked && onSelect(choice.id)}
               className={`
                 flex items-center justify-start gap-2 px-6 py-10 border rounded-xl text-left focus:outline-none text-2xl
                 ${buttonStyle}
-                ${isDisabled ? "pointer-events-none" : "hover:border-cyan_border hover:bg-cyan_pastel transition-colors"}        
+                ${isChecked ? "pointer-events-none" : "hover:border-cyan_border hover:bg-cyan_pastel transition-colors"}        
               `}
-              disabled={isDisabled}
+              disabled={isChecked}
             >
               <span className={`mr-4 font-bold`}>
                 {index + 1}
