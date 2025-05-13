@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Tabs, Tab, Button } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";

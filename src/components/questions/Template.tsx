@@ -4,11 +4,12 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import { Button } from "@mui/material";
 import { Question } from "../../services/api";
 import Choice from "./Choice";
 import Match from "./Match";
+import Sort from "./Sort";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
-import { Button } from "@mui/material";
 
 type TemplateProps = {
   questions: Question[];
@@ -102,6 +103,17 @@ export default function Template({ questions, lessonId }: TemplateProps) {
               <Match
                 questionTitle={question.question}
                 choices={question.choices}
+                selectedIds={userAnswers[question.id] as number[]}
+                isChecked={isChecked(question.id)}
+                checkResult={results[question.id]}
+                onSelect={(id) => setAnswer(question.id, id)}
+              />
+            )}
+
+            {question.question_type === "sorting" && (
+              <Sort
+                questionTitle={question.question}
+                tokens={question.example_tokens || []}
                 selectedIds={userAnswers[question.id] as number[]}
                 isChecked={isChecked(question.id)}
                 checkResult={results[question.id]}

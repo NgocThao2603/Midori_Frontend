@@ -8,9 +8,10 @@ import LandingPage from "../pages/LandingPage";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import PracticePhrase from "../pages/PracticePhrase";
+import Translate from "../pages/Translate";
+import PracticeTranslate from "../pages/PracticeTranslate";
 
 const  AppRoutes = () => {
-  
   return (
     <>
       <Routes>
@@ -26,8 +27,10 @@ const  AppRoutes = () => {
         >
           <Route path="/home" element={<HomePage />}></Route>
           <Route path="/learn-phrase/:lessonId" element={<LearnPhrase/>}></Route>
+          <Route path="/translate/:lessonId" element={<Translate/>}></Route>
         </Route>
         <Route path="/practice-phrase/:lessonId" element={<ProtectedRoute><PracticePhrase/></ProtectedRoute>} />
+        <Route path="/practice-translate/:lessonId" element={<ProtectedRoute><PracticeTranslate/></ProtectedRoute>} />
       </Routes>
     </>
   );
