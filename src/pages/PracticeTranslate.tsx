@@ -3,7 +3,7 @@ import { fetchQuestionsByLesson, Question } from "../services/api";
 import { useParams } from "react-router-dom";
 import Template from "../components/questions/Template";
 
-const PracticePhrase = () => {
+const PracticeTranslate = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const lessonIdNumber = Number(lessonId);
 
@@ -17,7 +17,7 @@ const PracticePhrase = () => {
       setLoading(true);
       const data = await fetchQuestionsByLesson(lessonIdNumber);
       const filtered = data.filter((q) =>
-        q.question_type === "choice" || q.question_type === "matching"
+        q.question_type === "sorting" || q.question_type === "fill_blank"
       );
       setQuestions(filtered);
       setLoading(false);
@@ -40,4 +40,4 @@ const PracticePhrase = () => {
   );
 };
 
-export default PracticePhrase;
+export default PracticeTranslate;

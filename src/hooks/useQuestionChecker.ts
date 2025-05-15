@@ -56,17 +56,39 @@ export function useQuestionChecker(questions: Question[]) {
       //   correctIds.every((id, index) => id === userIds[index]);
     }      
 
-    // else if (question.question_type === "fill_blank") {
-    //   const correctText = question.correct_text?.trim().toLowerCase();
-    //   const userText = typeof userAnswer === "string" ? userAnswer.trim().toLowerCase() : "";
-    //   isCorrect = correctText === userText;
-    // }
+    else if (question.question_type === "fill_blank") {
+      const correctAnswer = question.correct_answers?.[0] || "";
+      const userText = typeof userAnswer === "string" ? userAnswer : "";
+      
+      // Normalize strings để so sánh
+      const normalizeString = (str: string) => {
+        return str
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, ' ')
+          .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+          .replace(/\u3000/g, ' ');
+      };
 
-    // else if (question.question_type === "sorting") {
-    //   const correctOrder = question.correct_order || [];
-    //   const userOrder = Array.isArray(userAnswer) ? userAnswer : [];
-    //   isCorrect = JSON.stringify(correctOrder) === JSON.stringify(userOrder);
-    // }
+      const normalizedCorrect = normalizeString(correctAnswer);  
+      const normalizedUser = normalizeString(userText);
+      
+      isCorrect = normalizedCorrect === normalizedUser;
+    }
+
+    else if (question.question_type === "sorting") {
+      const userOrder = Array.isArray(userAnswer) ? userAnswer : [];
+    
+      // Lấy danh sách ID theo thứ tự đúng từ token_index
+      const correctOrder = (question.example_tokens || [])
+        .filter(t => typeof t.token_index === "number")
+        .sort((a, b) => (a.token_index! - b.token_index!))
+        .map(t => t.id);
+    
+      isCorrect =
+        correctOrder.length === userOrder.length &&
+        correctOrder.every((id, index) => id === userOrder[index]);
+    }
 
     setResults((prev) => ({
       ...prev,

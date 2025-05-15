@@ -74,6 +74,13 @@ export interface QuestionChoice {
   is_correct: boolean;
 }
 
+export interface ExampleToken {
+  id: number;
+  jp_token: string;
+  vn_token: string;
+  token_index: number;
+}
+
 export interface QuestionChoiceType extends QuestionBase {
   question_type: "choice" | "matching";
   choices: QuestionChoice[];
@@ -81,18 +88,29 @@ export interface QuestionChoiceType extends QuestionBase {
 
 export interface QuestionSortingType extends QuestionBase {
   question_type: "sorting";
-  tokens: string[];
+  example_tokens: ExampleToken[];
 }
 
 export interface QuestionFillBlankType extends QuestionBase {
   question_type: "fill_blank";
-  blanks: string[];
 }
 
 export type Question =
   | QuestionChoiceType
   | QuestionSortingType
   | QuestionFillBlankType;
+
+export interface AudioFile {
+  id: number;
+  vocabulary_id: number | null;
+  phrase_id: number | null;
+  example_id: number | null;
+  example_token_id: number | null;
+  audio_url: string;
+  audio_type: "vocab" | "phrase" | "example" | "example_token";
+  created_at: string;
+  updated_at: string;
+}
 
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
@@ -197,14 +215,40 @@ export const fetchVocabulariesByLesson = async (lessonId: string | undefined): P
 };
 
 // Fetch câu hỏi theo lesson
-export const fetchPhraseQuestionsByLesson = async (lessonId: number): Promise<Question[]> => {
+export const fetchQuestionsByLesson = async (lessonId: number): Promise<Question[]> => {
   try {
     const response = await api.get(`/questions`, {
       params: {
         lesson_id: lessonId
       }
     });
-    return response.data as Question[];
+
+    const rawQuestions = response.data as any[];
+
+    const questions: Question[] = rawQuestions.map((q) => {
+      if (q.question_type === "sorting") {
+        return {
+          ...q,
+          tokens: q.example_tokens
+        } as QuestionSortingType;
+      }
+
+      if (q.question_type === "choice" || q.question_type === "matching") {
+        return {
+          ...q,
+          choices: q.choices
+        } as QuestionChoiceType;
+      }
+
+      if (q.question_type === "sorting") {
+        return {
+          ...q
+        } as QuestionFillBlankType;
+      }
+
+      return q;
+    });
+    return questions;
   } catch (error) {
     console.error("Error fetching phrase questions:", error);
     return [];
