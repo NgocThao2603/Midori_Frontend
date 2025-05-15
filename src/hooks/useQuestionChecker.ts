@@ -56,11 +56,25 @@ export function useQuestionChecker(questions: Question[]) {
       //   correctIds.every((id, index) => id === userIds[index]);
     }      
 
-    // else if (question.question_type === "fill_blank") {
-    //   const correctText = question.correct_text?.trim().toLowerCase();
-    //   const userText = typeof userAnswer === "string" ? userAnswer.trim().toLowerCase() : "";
-    //   isCorrect = correctText === userText;
-    // }
+    else if (question.question_type === "fill_blank") {
+      const correctAnswer = question.correct_answers?.[0] || "";
+      const userText = typeof userAnswer === "string" ? userAnswer : "";
+      
+      // Normalize strings để so sánh
+      const normalizeString = (str: string) => {
+        return str
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, ' ')
+          .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+          .replace(/\u3000/g, ' ');
+      };
+
+      const normalizedCorrect = normalizeString(correctAnswer);  
+      const normalizedUser = normalizeString(userText);
+      
+      isCorrect = normalizedCorrect === normalizedUser;
+    }
 
     else if (question.question_type === "sorting") {
       const userOrder = Array.isArray(userAnswer) ? userAnswer : [];

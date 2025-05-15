@@ -3,7 +3,7 @@ import { fetchQuestionsByLesson, Question } from "../services/api";
 import { useParams } from "react-router-dom";
 import Template from "../components/questions/Template";
 
-const PracticeTranslate = () => {
+const PracticeListen = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const lessonIdNumber = Number(lessonId);
 
@@ -40,4 +40,4 @@ const PracticeTranslate = () => {
   );
 };
 
-export default PracticeTranslate;
+export default PracticeListen;

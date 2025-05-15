@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import AnswerResult from "../shared/AnswerResult";
-import { ExampleToken } from "../../services/api";
+import { AudioFile, ExampleToken } from "../../services/api";
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 
 type SortProps = {
   questionTitle: string;
@@ -10,6 +11,8 @@ type SortProps = {
   selectedIds: number[];
   checkResult: "correct" | "incorrect" | null;
   isChecked: boolean;
+  audioFiles: AudioFile[];
+  mode: "translate" | "listen";
 };
 
 export default function Sort({
@@ -19,9 +22,28 @@ export default function Sort({
   onSelect,
   checkResult,
   isChecked,
+  audioFiles,
+  mode,
 }: SortProps) {
   const [selected, setSelected] = useState<ExampleToken[]>([]);
   const [available, setAvailable] = useState<ExampleToken[]>([]);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playAudio = (url: string) => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+    }
+
+    const audio = new Audio(url);
+    currentAudioRef.current = audio;
+    audio.volume = 1;
+    audio.play();
+  };
+
+  const questionAudio = audioFiles.find(
+    (file) => file.audio_type === "example" && file.id === tokens[0]?.id
+  );
 
   const shuffleArray = (array: ExampleToken[]) => {
     return array
@@ -41,6 +63,23 @@ export default function Sort({
     setSelected(selectedTokens);
     setAvailable(availableTokens);
   }, [tokens]);
+
+  useEffect(() => {
+    return () => {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+  if (mode === "listen") {
+    if (questionAudio) {
+      playAudio(questionAudio.audio_url);
+    }
+  }
+}, [ audioFiles]);
 
   useEffect(() => {
     onSelect(selected.map((t) => t.id));
@@ -80,6 +119,15 @@ export default function Sort({
 
   const handleClick = (token: ExampleToken) => {
     if (isChecked) return;
+
+    const tokenAudio = audioFiles.find(
+      (file) =>
+        file.audio_type === "example_token" &&
+        file.example_token_id === token.id
+    );
+    if (tokenAudio) {
+      playAudio(tokenAudio.audio_url);
+    }
 
     if (selected.find((t) => t.id === token.id)) {
       // Bỏ chọn → quay lại available
@@ -130,9 +178,28 @@ export default function Sort({
 
   return (
     <div className="w-full max-w-3xl mx-auto text-center mt-6">
-      <h3 className="text-xl font-bold text-gray-700 mb-6">Sắp xếp câu đúng</h3>
-      <p className="text-2xl font-bold text-cyan_text mb-10">{questionTitle}</p>
+      {mode === "translate" && (
+        <div>
+          <h3 className="text-xl font-bold text-gray-700 mb-6">Sắp xếp câu đúng</h3>
+          <p className="text-2xl font-bold text-cyan_text mb-10">{questionTitle}</p>
+        </div>
+      )}
 
+      {mode === "listen" && (
+        <div>
+          <h3 className="text-xl font-bold text-gray-700 mb-6">Nghe và sắp xếp câu đúng</h3>
+          {(() => {
+            return questionAudio ? (
+              <div
+                onClick={() => playAudio(questionAudio.audio_url)}
+                className="ml-0 w-24 h-24 mx-auto cursor-pointer text-cyan_text hover:scale-110 transition-transform duration-200"
+              >
+                <VolumeUpIcon style={{ width: "100%", height: "100%" }} />
+              </div>
+            ) : null;
+          })()}
+        </div>
+      )}  
       <DragDropContext onDragEnd={onDragEnd}>
         {/* Selected Line (blank) */}
         <Droppable droppableId="selected" direction="horizontal">
@@ -234,6 +301,7 @@ export default function Sort({
       <AnswerResult
         result={checkResult}
         correctText={isChecked ? renderCorrectOrder() : ""}
+        resultAudioUrl={questionAudio?.audio_url}
       />
     </div>
   );

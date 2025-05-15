@@ -93,13 +93,24 @@ export interface QuestionSortingType extends QuestionBase {
 
 export interface QuestionFillBlankType extends QuestionBase {
   question_type: "fill_blank";
-  blanks: string[];
 }
 
 export type Question =
   | QuestionChoiceType
   | QuestionSortingType
   | QuestionFillBlankType;
+
+export interface AudioFile {
+  id: number;
+  vocabulary_id: number | null;
+  phrase_id: number | null;
+  example_id: number | null;
+  example_token_id: number | null;
+  audio_url: string;
+  audio_type: "vocab" | "phrase" | "example" | "example_token";
+  created_at: string;
+  updated_at: string;
+}
 
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
@@ -227,6 +238,12 @@ export const fetchQuestionsByLesson = async (lessonId: number): Promise<Question
           ...q,
           choices: q.choices
         } as QuestionChoiceType;
+      }
+
+      if (q.question_type === "sorting") {
+        return {
+          ...q
+        } as QuestionFillBlankType;
       }
 
       return q;

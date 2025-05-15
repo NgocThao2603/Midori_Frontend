@@ -7,22 +7,44 @@ import { useEffect } from "react";
 type AnswerResultProps = {
   result: "correct" | "incorrect" | null;
   correctText?: string;
+  resultAudioUrl?: string;
 };
 
-export default function AnswerResult({ result, correctText }: AnswerResultProps) {
+export default function AnswerResult({ result, correctText, resultAudioUrl }: AnswerResultProps) {
   if (!result) return null;
 
   const isCorrect = result === "correct";
 
   useEffect(() => {
+    let checkAudio: HTMLAudioElement | null = null;
+    let resultAudio: HTMLAudioElement | null = null;
+
     if (result === "correct") {
-      const audio = new Audio(correctSound);
-      audio.play();
+      checkAudio = new Audio(correctSound);
     } else if (result === "incorrect") {
-      const audio = new Audio(incorrectSound);
-      audio.play();
+      checkAudio = new Audio(incorrectSound);
     }
-  }, [result]);
+
+    if (checkAudio) {
+      checkAudio.volume = 0.3;
+      checkAudio.play();
+
+      checkAudio.onended = () => {
+        if (resultAudioUrl) {
+          resultAudio = new Audio(resultAudioUrl);
+          resultAudio.volume = 1;
+          resultAudio.play();
+        }
+      };
+    }
+
+    return () => {
+      checkAudio?.pause();
+      checkAudio = null;
+      resultAudio?.pause();
+      resultAudio = null;
+    };
+  }, [result, resultAudioUrl]);
 
   return (
     <div className={`text-center mt-10 ${isCorrect ? "text-secondary" : "text-red_text"}`}>

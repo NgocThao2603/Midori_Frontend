@@ -71,12 +71,11 @@ const LessonList = ({ level, onChapterToggle }: { level: string; onChapterToggle
     if (location.pathname === "/home") {
       scrollToLesson(lessonId);
     } else {
-      let targetPath = `/learn-phrase/${lessonId}`; // Mặc định là trang Learn Phrase
-  
-      if (location.pathname.startsWith("/learn-kanji")) {
-        targetPath = `/learn-kanji/${lessonId}`;
-      } else if (location.pathname.startsWith("/learn-grammar")) {
-        targetPath = `/learn-grammar/${lessonId}`;
+      let targetPath = `/learn-phrase/${lessonId}`;
+      if (location.pathname.startsWith("/translate")) {
+        targetPath = `/translate/${lessonId}`;
+      } else if (location.pathname.startsWith("/listen")) {
+        targetPath = `/listen/${lessonId}`;
       }
   
       navigate(targetPath);

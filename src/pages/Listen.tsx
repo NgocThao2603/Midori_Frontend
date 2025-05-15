@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import quoteIcon from "../assets/quote-icon.png";
 
-const Translate: React.FC = () => {
+const Listen: React.FC = () => {
   const navigate = useNavigate();
   const { lessonId } = useParams();
   return (
@@ -12,28 +12,29 @@ const Translate: React.FC = () => {
         <img src={quoteIcon} alt="" className="absolute bottom-4 right-4 w-4 h-4 rotate-180" />
         <div className="py-6 px-8">
           <p className="font-semibold text-xl">
-            Cùng Midori luyện dịch câu
+            Cùng Midori luyện nghe
           </p>
           <ul className="list-disc list-inside ml-2 mt-4 space-y-2">
-            <li>Sắp xếp câu</li>
-            <li>Viết câu cho đúng nghĩa</li>
+            <li>Nghe và chọn đáp án đúng</li>
+            <li>Nghe và sắp xếp câu</li>
+            <li>Nghe và viết lại</li>
           </ul>
-          <p className="mt-4 font-semibold text-xl">Thử thách luyện dịch và ghép câu!</p>
+          <p className="mt-4 font-semibold text-xl">Thử thách luyện nghe và nắm bắt keyword!</p>
         </div> 
       </div>
 
       <Button
         variant="contained"
-        onClick={() => navigate(`/practice-translate/${lessonId}`)}
+        onClick={() => navigate(`/practice-listen/${lessonId}`)}
         className="!bg-cyan_border hover:!bg-secondary !text-white !font-bold !text-xl !px-6 !py-4 !mt-6 !rounded-lg !focus:outline-none"
         sx={{
           "&:focus": { outline: "none", boxShadow: "none" },
         }}
       >
-        BẮT ĐẦU LUYỆN DỊCH
+        BẮT ĐẦU LUYỆN NGHE
       </Button>
     </div>
   );
 };
 
-export default Translate;
+export default Listen;

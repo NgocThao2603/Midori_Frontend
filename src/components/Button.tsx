@@ -10,10 +10,10 @@ interface ButtonProps {
 const Button: React.FC<ButtonProps> = ({ text, img, active = false, onClick }) => {
   return (
     <button
-      className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl text-left text-lg font-bold cursor-pointer border hover:border-transparent focus:outline-none ${
+      className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl text-left text-lg font-bold border hover:border-transparent focus:outline-none ${
         active
-          ? "bg-green_pastel text-secondary border-secondary"
-          : "text-gray-600 bg-white hover:bg-gray-100 border-transparent"
+          ? "bg-green_pastel text-secondary border-secondary hover:border-secondary"
+          : "text-gray-600 bg-white hover:bg-gray-100 border-transparent cursor-pointer"
       }`}
       onClick={onClick}
     >

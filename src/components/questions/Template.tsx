@@ -1,14 +1,16 @@
 import { Carousel } from "antd";
 import { CarouselRef } from "antd/es/carousel";
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { Button } from "@mui/material";
-import { Question } from "../../services/api";
+import { AudioFile, Question } from "../../services/api";
+import { fetchAudioFiles } from "../../services/AudioService";
 import Choice from "./Choice";
 import Match from "./Match";
 import Sort from "./Sort";
+import FillBlank from "./FillBlank";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
 
 type TemplateProps = {
@@ -21,6 +23,10 @@ export default function Template({ questions, lessonId }: TemplateProps) {
   const navigate = useNavigate();
   const carouselRef = useRef<CarouselRef | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const location = useLocation();
+  const mode = location.pathname.includes("translate") ? "translate" : "listen";
+
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
 
   const {
     userAnswers,
@@ -35,6 +41,17 @@ export default function Template({ questions, lessonId }: TemplateProps) {
       carouselRef.current.next();
     }
   };
+
+  const getBackRoute = () => {
+    if (location.pathname.includes("practice-phrase")) return `/learn-phrase/${lessonId}`;
+    if (location.pathname.includes("practice-translate")) return `/translate/${lessonId}`;
+    if (location.pathname.includes("practice-listen")) return `/listen/${lessonId}`;
+    return `/learn-phrase/${lessonId}`;
+  };
+
+  useEffect(() => {
+    fetchAudioFiles().then(setAudioFiles);
+  }, []);
 
   return (
     <div className="relative w-full h-screen">
@@ -74,7 +91,7 @@ export default function Template({ questions, lessonId }: TemplateProps) {
         <CloseOutlinedIcon
           style={{ fontSize: 40 }}
           className="ml-4 cursor-pointer"
-          onClick={() => navigate(`/learn-phrase/${lessonId}`, { replace: true })}
+          onClick={() => navigate(getBackRoute(), { replace: true })}
         />
       </div>
 
@@ -118,9 +135,23 @@ export default function Template({ questions, lessonId }: TemplateProps) {
                 isChecked={isChecked(question.id)}
                 checkResult={results[question.id]}
                 onSelect={(id) => setAnswer(question.id, id)}
+                audioFiles={audioFiles}
+                mode={mode}
+              />
+            )}
+            {question.question_type === "fill_blank" && (
+              <FillBlank
+                questionTitle={question.question}
+                isChecked={isChecked(question.id)}
+                checkResult={results[question.id]}
+                onSelect={(answer) => setAnswer(question.id, answer)}
+                correct_answers={question.correct_answers}
+                audioFiles={audioFiles}
+                mode={mode}
               />
             )}
 
+            {/* Hiện nút kiểm tra nếu chưa kiểm tra */}
             {!isChecked(question.id) && (
               <div className="mt-10 text-center">
                 <Button

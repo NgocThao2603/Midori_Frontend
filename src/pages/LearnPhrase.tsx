@@ -213,7 +213,9 @@ const LearnPhrase: React.FC = () => {
                 )
               ) : null
             ) : (
-              <p>Loading...</p>
+              <div className="flex items-center justify-center h-64">
+                <div className="w-16 h-16 border-4 border-cyan_border border-t-transparent rounded-full animate-spin"></div>
+              </div>
             )}
             <button onClick={handleNext} disabled={currentIndex === shuffledFlashcards.length - 1} className="border border-white bg-gray-50 hover:border-transparent focus:outline-none hover:bg-gray-100 disabled:hover:bg-gray-50">
               <ArrowForwardIos fontSize="large" className={currentIndex === shuffledFlashcards.length - 1 ? "text-gray-300" : "text-secondary"} />
