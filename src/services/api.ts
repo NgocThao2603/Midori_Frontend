@@ -136,6 +136,10 @@ export interface AudioFile {
   updated_at: string;
 }
 
+export interface UserPoint {
+  point: number;
+}
+
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
   try {
@@ -307,5 +311,49 @@ export const fetchLessonMeaningsByLesson = async (lessonId: number): Promise<Les
   } catch (error) {
     console.error("Error fetching lesson meanings:", error);
     return [];
+  }
+};
+
+// Lấy điểm hiện tại của user
+export const fetchUserPoint = async (): Promise<UserPoint> => {
+  try {
+    const res = await api.get("/point");
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching user point:", error);
+    throw error;
+  }
+};
+
+// Cập nhật điểm user (tăng/giảm)
+export const updateUserPoint = async (data: { point: number; type: 'add' | 'set' }) => {
+  try {
+    const response = await api.patch("/point", { 
+      user_point: {
+        point: data.point,
+        update_type: data.type
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user point:", error);
+    throw error;
+  }
+};
+
+export const updateLessonStatus = async (
+  lessonId: number,
+  type: "phrase" | "translate" | "listen" | "test"
+) => {
+  try {
+    const response = await api.patch(`/lesson_statuses/${lessonId}`, {
+      user_exercise_status: {
+        exercise_type: type
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating lesson status:", error);
+    throw error;
   }
 };

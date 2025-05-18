@@ -48,7 +48,7 @@ const PracticePhrase = () => {
   if (questions.length === 0) return <p className="h-[60vh] flex justify-center text-cyan_text text-2xl">Không có câu hỏi nào.</p>;
 
   return (
-    <Template questions={questions} lessonId={lessonIdNumber} lessonMeanings={lessonMeanings} />
+    <Template questions={questions} lessonId={lessonIdNumber} lessonMeanings={lessonMeanings} practice_mode="phrase"/>
   );
 };
 
