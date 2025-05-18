@@ -6,11 +6,25 @@ import Calendar from "../components/Calendar";
 import { LessonScrollProvider } from "../contexts/LessonScrollContext";
 import { useState } from "react";
 
+const getModeFromPath = (
+  pathname: string
+): "phrase" | "translate" | "listen" | "test" | null => {
+  // Example logic: extract mode from pathname, adjust as needed
+  if (pathname.includes("phrase")) return "phrase";
+  if (pathname.includes("translate")) return "translate";
+  if (pathname.includes("listen")) return "listen";
+  if (pathname.includes("test")) return "test";
+  return null;
+};
+
 const Layout = () => {
   const location = useLocation();
   const isHome = location.pathname === "/home";
   const [level, setLevel] = useState<string>("N2");
   const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
+
+  const state = location.state as { fromLessonSection?: boolean } | null;
+  const displayMode = state?.fromLessonSection ? getModeFromPath(location.pathname) : null;
 
   return (
     <LessonScrollProvider>
@@ -29,7 +43,7 @@ const Layout = () => {
                   <Calendar />
                 </div>
               )}
-              <LessonList level={level} onChapterToggle={(id) => setActiveChapterId(id)}/>
+              <LessonList level={level} onChapterToggle={(id) => setActiveChapterId(id)} displayMode={displayMode}/>
             </div>
           </div>
         </div>

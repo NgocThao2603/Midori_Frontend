@@ -15,6 +15,9 @@ const Sidebar = () => {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("");
 
+  const state = location.state as { fromLessonSection?: boolean };
+  const isFromLessonSection = state?.fromLessonSection;
+
   // Tách lessonId từ URL nếu có
   const matchLessonId = location.pathname.match(/\/(learn-phrase|translate|listen)\/(\d+)/);
   const lessonId = matchLessonId ? matchLessonId[2] : "1";
@@ -42,7 +45,7 @@ const Sidebar = () => {
       <nav className="flex flex-col gap-2">
         {menuItems.map((item) => (
           <Link key={item.name} to={item.path}>
-            <Button img={item.icon} text={item.name} active={location.pathname.startsWith(item.path)} />
+            <Button img={item.icon} text={item.name} active={isFromLessonSection ? item.path === "/home" : location.pathname.startsWith(item.path)}  />
           </Link>
         ))}
       </nav>

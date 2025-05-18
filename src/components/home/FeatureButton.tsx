@@ -3,7 +3,7 @@ import { LucideIcon } from "lucide-react";
 
 interface FeatureButtonProps {
   icon: LucideIcon;
-  onClick?: () => void;
+  onClick: () => void;
   isDone: boolean;
 }
 

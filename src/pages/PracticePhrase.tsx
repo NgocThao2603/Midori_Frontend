@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchQuestionsByLesson, Question } from "../services/api";
+import { fetchLessonMeaningsByLesson, fetchQuestionsByLesson, LessonMeaning, Question } from "../services/api";
 import { useParams } from "react-router-dom";
 import Template from "../components/questions/Template";
 
@@ -9,18 +9,30 @@ const PracticePhrase = () => {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [lessonMeanings, setLessonMeanings] = useState<LessonMeaning[]>([]);
   useEffect(() => {
     if (!lessonIdNumber) return;
 
     const loadQuestions = async () => {
-      setLoading(true);
-      const data = await fetchQuestionsByLesson(lessonIdNumber);
-      const filtered = data.filter((q) =>
-        q.question_type === "choice" || q.question_type === "matching"
-      );
-      setQuestions(filtered);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const [questionsData, meaningsData] = await Promise.all([
+          fetchQuestionsByLesson(lessonIdNumber),
+          fetchLessonMeaningsByLesson(lessonIdNumber)
+        ]);
+        
+        const filtered = questionsData.filter((q) =>
+          q.question_type === "choice" || q.question_type === "matching"
+        );
+        setQuestions(filtered);
+        setLessonMeanings(meaningsData || []); // Ensure it's an array
+      } catch (error) {
+        console.error("Error loading questions or meanings:", error);
+        setQuestions([]);
+        setLessonMeanings([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadQuestions();
@@ -36,7 +48,7 @@ const PracticePhrase = () => {
   if (questions.length === 0) return <p className="h-[60vh] flex justify-center text-cyan_text text-2xl">Không có câu hỏi nào.</p>;
 
   return (
-    <Template questions={questions} lessonId={lessonIdNumber} />
+    <Template questions={questions} lessonId={lessonIdNumber} lessonMeanings={lessonMeanings} />
   );
 };
 

@@ -52,6 +52,7 @@ const HomePage: React.FC = () => {
               }}
             >
               <LessonSection
+                lessonId={lesson.id}
                 chapter={chapter.title}
                 title={lesson.title}
                 doneStatus={lessonStatuses[lesson.id] || [false, false, false, false]}

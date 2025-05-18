@@ -8,9 +8,10 @@ type AnswerResultProps = {
   result: "correct" | "incorrect" | null;
   correctText?: string;
   resultAudioUrl?: string;
+  meaning?: string;
 };
 
-export default function AnswerResult({ result, correctText, resultAudioUrl }: AnswerResultProps) {
+export default function AnswerResult({ result, correctText, resultAudioUrl, meaning }: AnswerResultProps) {
   if (!result) return null;
 
   const isCorrect = result === "correct";
@@ -57,17 +58,25 @@ export default function AnswerResult({ result, correctText, resultAudioUrl }: An
       </div>
       <div
         className={`
-          mt-6 p-4 h-[15vh] rounded-xl border-2 inline-block max-w-2xl w-full text-xl mx-auto
-          ${isCorrect ? "bg-green_pastel border-green_border text-center flex items-center justify-center font-bold" 
-                      : "bg-red_pastel border-red_text text-left flex flex-col justify-center"}
+          mt-6 p-4 min-h-[15vh] rounded-xl border-2 inline-block max-w-2xl w-full text-xl mx-auto
+          ${isCorrect
+            ? "bg-green_pastel border-green_border text-center flex flex-col items-center justify-center font-bold"
+            : "bg-red_pastel border-red_text text-left flex flex-col justify-center"}
         `}
       >
         {isCorrect ? (
-          "Đáp án chính xác!"
+          <>
+            {meaning ? (
+              <div className="text-center italic">{meaning}</div>
+            ) : (
+              <div>Đáp án chính xác!</div>
+            )}
+          </>
         ) : (
           <>
             <span className="ml-10 font-bold">Đáp án chính xác:</span>
             <span className="block text-center w-full mt-2">{correctText}</span>
+            <span className="text-center italic">{meaning}</span>
           </>
         )}
       </div>

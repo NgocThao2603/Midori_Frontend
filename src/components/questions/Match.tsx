@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AnswerResult from "../shared/AnswerResult";
+import { AudioFile } from "../../services/api";
 
 type MatchProps = {
   questionTitle: string;
@@ -9,6 +10,8 @@ type MatchProps = {
   selectedIds: number[];
   checkResult: "correct" | "incorrect" | null;
   isChecked: boolean;
+  audioFiles: AudioFile[];
+  meaning?: string;
 };
 
 export default function Match({
@@ -18,6 +21,8 @@ export default function Match({
   selectedIds,
   checkResult,
   isChecked,
+  audioFiles,
+  meaning,
 }: MatchProps) {
   const numBlanks = (questionTitle.match(/___/g) || []).length;
   const [localSelected, setLocalSelected] = useState<number[]>(selectedIds || []);
@@ -25,6 +30,10 @@ export default function Match({
   useEffect(() => {
     onSelect(localSelected);
   }, [localSelected]);
+
+  const questionAudio = audioFiles.find(
+    (file) => file.audio_type === "phrase"
+  );
 
   const getChoiceById = (id: number) => choices.find((c) => c.id === id);
 
@@ -288,6 +297,8 @@ export default function Match({
       <AnswerResult
         result={checkResult}
         correctText={isChecked ? renderCorrectAnswerText() : ""}
+        resultAudioUrl={questionAudio?.audio_url}
+        meaning={meaning}
       />
     </div>
   );
