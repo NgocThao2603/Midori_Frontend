@@ -1,4 +1,5 @@
 import AnswerResult from "../shared/AnswerResult";
+import { AudioFile } from "../../services/api";
 
 type ChoiceProps = {
   questionTitle: string;
@@ -7,9 +8,15 @@ type ChoiceProps = {
   selectedId: number | null;
   checkResult: "correct" | "incorrect" | null;
   isChecked: boolean;
+  audioFiles: AudioFile[];
+  meaning?: string;
 };
 
-export default function Choice({ questionTitle, choices, onSelect, selectedId, checkResult, isChecked }: ChoiceProps) {
+export default function Choice({ questionTitle, choices, onSelect, selectedId, checkResult, isChecked, audioFiles, meaning }: ChoiceProps) {
+  const questionAudio = audioFiles.find(
+    (file) => file.audio_type === "example" || file.audio_type === "vocab" || file.audio_type === "phrase"
+  );
+
   return (
     <div className="w-full max-w-3xl mx-auto text-center mt-6">
       <h3 className="text-xl font-bold text-gray-700 mb-6">Chọn đáp án đúng</h3>
@@ -59,6 +66,8 @@ export default function Choice({ questionTitle, choices, onSelect, selectedId, c
       <AnswerResult
         result={checkResult}
         correctText={choices.find(c => c.is_correct)?.choice}
+        resultAudioUrl={questionAudio?.audio_url}
+        meaning={meaning}
       />
     </div>
   );

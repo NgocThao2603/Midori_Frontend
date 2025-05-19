@@ -2,42 +2,26 @@ import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import LessonSection from "../components/home/LessonSection";
 import { useLessonScroll } from "../contexts/LessonScrollContext";
-import { getLessonStatuses, fetchChapters, Chapter } from "../services/api";
+import { useLessonStatuses } from "../contexts/LessonStatusContext";
+import { fetchChapters, Chapter } from "../services/api";
 
 const HomePage: React.FC = () => {
   const { lessonRefs } = useLessonScroll();
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [lessonStatuses, setLessonStatuses] = useState<Record<number, boolean[]>>({});
-  const { activeChapterId } = useOutletContext<{ activeChapterId: number | null; level: string }>();
+  const { lessonStatuses } = useLessonStatuses();
+  const { activeChapterId, level } = useOutletContext<{ activeChapterId: number | null; level: string }>();
 
   useEffect(() => {
-    // Gọi cả hai API song song
     const fetchData = async () => {
       try {
-        const [chapterData, statusData] = await Promise.all([
-          fetchChapters("N2"),
-          getLessonStatuses(),
-        ]);
-    
-        const statusMap: Record<number, boolean[]> = {};
-        Object.entries(statusData).forEach(([lessonId, item]) => {
-          statusMap[Number(lessonId)] = [
-            item.phrase,
-            item.translate,
-            item.listen,
-            item.test,
-          ];
-        });
-    
+        const chapterData = await fetchChapters(level);
         setChapters(chapterData);
-        setLessonStatuses(statusMap);
       } catch (error) {
-        console.error("Lỗi khi load dữ liệu:", error);
+        console.error("Lỗi khi load chapters:", error);
       }
-    };    
-
+    };
     fetchData();
-  }, []);
+  }, [level]);
 
   return (
     <div className="px-6 items-center gap-8">
@@ -52,6 +36,7 @@ const HomePage: React.FC = () => {
               }}
             >
               <LessonSection
+                lessonId={lesson.id}
                 chapter={chapter.title}
                 title={lesson.title}
                 doneStatus={lessonStatuses[lesson.id] || [false, false, false, false]}

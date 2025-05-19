@@ -53,6 +53,29 @@ export interface Flashcard {
   data: Vocabulary | Phrase;
 }
 
+export interface LessonMeaning {
+  id: number;
+  meaning: string;
+  kana?: string;  // chỉ có ở vocab
+  type: "vocab" | "phrase" | "example";
+}
+
+interface ApiMeaningResponse {
+  vocabularies: Array<{
+    id: number;
+    kana: string;
+    meanings: string[];
+  }>;
+  phrases: Array<{
+    id: number; 
+    meaning: string;
+  }>;
+  examples: Array<{
+    id: number;
+    meaning: string;
+  }>;
+}
+
 export interface QuestionBase {
   id: number;
   lesson_id: number;
@@ -75,6 +98,7 @@ export interface QuestionChoice {
 }
 
 export interface ExampleToken {
+  example_id: number | null;
   id: number;
   jp_token: string;
   vn_token: string;
@@ -110,6 +134,10 @@ export interface AudioFile {
   audio_type: "vocab" | "phrase" | "example" | "example_token";
   created_at: string;
   updated_at: string;
+}
+
+export interface UserPoint {
+  point: number;
 }
 
 // Đăng nhập user
@@ -252,5 +280,80 @@ export const fetchQuestionsByLesson = async (lessonId: number): Promise<Question
   } catch (error) {
     console.error("Error fetching phrase questions:", error);
     return [];
+  }
+};
+
+export const fetchLessonMeaningsByLesson = async (lessonId: number): Promise<LessonMeaning[]> => {
+  try {
+    const response = await api.get<ApiMeaningResponse>(`/lesson_meanings/lesson/${lessonId}`);
+    const { vocabularies, phrases, examples } = response.data;
+    
+    const meanings: LessonMeaning[] = [
+      ...vocabularies.map(v => ({
+        id: v.id,
+        meaning: v.meanings[0], // Lấy meaning đầu tiên
+        kana: v.kana,
+        type: "vocab" as const
+      })),
+      ...phrases.map(p => ({
+        id: p.id,
+        meaning: p.meaning,
+        type: "phrase" as const
+      })),
+      ...examples.map(e => ({
+        id: e.id,
+        meaning: e.meaning,
+        type: "example" as const
+      }))
+    ];
+
+    return meanings;
+  } catch (error) {
+    console.error("Error fetching lesson meanings:", error);
+    return [];
+  }
+};
+
+// Lấy điểm hiện tại của user
+export const fetchUserPoint = async (): Promise<UserPoint> => {
+  try {
+    const res = await api.get("/point");
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching user point:", error);
+    throw error;
+  }
+};
+
+// Cập nhật điểm user (tăng/giảm)
+export const updateUserPoint = async (data: { point: number; type: 'add' | 'set' }) => {
+  try {
+    const response = await api.patch("/point", { 
+      user_point: {
+        point: data.point,
+        update_type: data.type
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user point:", error);
+    throw error;
+  }
+};
+
+export const updateLessonStatus = async (
+  lessonId: number,
+  type: "phrase" | "translate" | "listen" | "test"
+) => {
+  try {
+    const response = await api.patch(`/lesson_statuses/${lessonId}`, {
+      user_exercise_status: {
+        exercise_type: type
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating lesson status:", error);
+    throw error;
   }
 };

@@ -1,10 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import React, { SetStateAction, useState } from "react";
+import React, { useEffect } from "react";
 import { Avatar, IconButton, Menu, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
-import { Bell } from "lucide-react";
 import avatar from "../assets/avatar.svg";
-import { logoutUser } from "../services/api";
+import point from "../assets/point.png";
+import { logoutUser, fetchUserPoint } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 
 interface HeaderProps {
@@ -13,6 +13,7 @@ interface HeaderProps {
   isLoggedIn: boolean;
 }
 const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
+  const [points, setPoints] = React.useState<number | null>(null);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,6 +48,19 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
       console.error("Logout thất bại:", error);
     }
   };
+
+  useEffect(() => {
+    const loadPoint = async () => {
+      try {
+        const data = await fetchUserPoint();
+        setPoints(data.point);
+      } catch (error) {
+        console.error("Không thể lấy điểm:", error);
+      }
+    };
+
+    loadPoint();
+  }, []);
 
   if (!isLoggedIn) {
     // Header cho người chưa đăng nhập (Landing Page)
@@ -97,7 +111,7 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
   }
 
   return (
-    <header className="fixed top-0 left-0 w-full flex justify-end items-center gap-10 p-6 bg-white z-100 text-lg">
+    <header className="fixed top-0 left-0 w-full flex justify-end items-center gap-12 p-6 bg-white z-100 text-lg">
       <div className="relative">
         <FormControl
           sx={{
@@ -169,13 +183,9 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
         </FormControl>
       </div>
 
-      {/* Icon chuông & số lượng thông báo */}
-      <div className="flex items-center text-secondary">
-        <Bell size={20} />
-      </div>
-
-      <div className="flex items-center gap-2 text-secondary font-bold">
-        2408
+      <div className="flex min-w-[60px] items-center gap-3 text-secondary font-bold">
+        <img src={point} alt=" " className="w-8 h-8"/>
+        {points !== null ? points : "..."}
       </div>
 
       <div>

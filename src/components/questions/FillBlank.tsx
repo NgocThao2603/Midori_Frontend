@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 type FillBlankProps = {
   questionTitle: string;
@@ -11,6 +11,7 @@ type FillBlankProps = {
   correct_answers: string[] | null;
   audioFiles: AudioFile[];
   mode: "translate" | "listen";
+  meaning?: string;
 };
 
 export default function FillBlank({
@@ -21,6 +22,7 @@ export default function FillBlank({
   correct_answers = [],
   audioFiles,
   mode,
+  meaning
 }: FillBlankProps) {
   const [answer, setAnswer] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -73,15 +75,15 @@ export default function FillBlank({
   }, [answer]);
 
   useEffect(() => {
-      return () => {
-        if (currentAudioRef.current) {
-          currentAudioRef.current.pause();
-          currentAudioRef.current = null;
-        }
-      };
-    }, []);
-  
-    useEffect(() => {
+    return () => {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (mode === "listen") {
       if (questionAudio) {
         playAudio(questionAudio.audio_url);
@@ -134,6 +136,7 @@ export default function FillBlank({
             : undefined
         }
         resultAudioUrl={questionAudio?.audio_url}
+        meaning={meaning}
       />
     </div>
   );
