@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { List, ListItemButton, ListItemText, Collapse, ListItem } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useLessonScroll } from "../contexts/LessonScrollContext";
+import { useLessonStatuses } from "../contexts/LessonStatusContext";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { fetchChapters } from "../services/api";
+import tick from "../assets/tick.png"; 
 
 interface Lesson {
   id: number;
@@ -21,16 +23,19 @@ const LessonList = ({
   level,
   onChapterToggle,
   displayMode,
+  activeMode
 }: {
   level: string;
   onChapterToggle: (chapterId: number) => void;
-  displayMode?: "phrase" | "translate" | "listen" | "test" | null;
+  displayMode?: "phrase" | "translate" | "listen" | "test" | null; // displayMode: Click tu FeatureButton
+  activeMode?: "phrase" | "translate" | "listen" | "test" | null; // activeMode: xac dinh mode cho url hien tai
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/home";
   const [openChapters, setOpenChapters] = useState<{ [key: number]: boolean }>({});
   const { scrollToLesson } = useLessonScroll();
+  const { isDoneStatus, isLessonComplete } = useLessonStatuses();
   const [chapters, setChapters] = useState<Chapter[]>([]);
 
   const handleToggleChapter = (chapterId: number) => {
@@ -83,6 +88,19 @@ const LessonList = ({
     getChapters();
   }, [level]);
 
+  useEffect(() => {
+    if (!isCompactMode && !isHome && activeMode && lessonId && chapters.length > 0) {
+      const numericId = parseInt(lessonId, 10);
+      const chapterToOpen = chapters.find(ch =>
+        ch.lessons.some(lesson => lesson.id === numericId)
+      );
+      if (chapterToOpen) {
+        setOpenChapters({ [chapterToOpen.id]: true });
+        onChapterToggle(chapterToOpen.id);
+      }
+    }
+  }, [isCompactMode, isHome, activeMode, lessonId, chapters]);
+
   const handleLessonClick = (lessonId: number) => {
     if (location.pathname === "/home") {
       scrollToLesson(lessonId);
@@ -98,13 +116,15 @@ const LessonList = ({
     }
   };
 
-  const currentMode = location.pathname.split("/")[1];
   const modes = [
-    { key: "learn-phrase", label: "Học cụm từ", color: "bg-green-500 hover:bg-green-600" },
-    { key: "practice-translate", label: "Luyện dịch", color: "bg-blue-500 hover:bg-blue-600" },
-    { key: "practice-listen", label: "Luyện nghe", color: "bg-purple-500 hover:bg-purple-600" },
-    { key: "test", label: "Làm bài test", color: "bg-red-500 hover:bg-red-600" },
+    { key: "phrase", path:"learn-phrase", label: "Học cụm từ", color: "bg-green-500 hover:bg-green-600" },
+    { key: "translate", path:"practice-translate", label: "Luyện dịch", color: "bg-blue-500 hover:bg-blue-600" },
+    { key: "listen", path:"practice-listen", label: "Luyện nghe", color: "bg-purple-500 hover:bg-purple-600" },
+    { key: "test", path:"practice-test", label: "Làm bài test", color: "bg-red-500 hover:bg-red-600" },
   ];
+  const pathSegment = location.pathname.split("/")[1];
+  const currentModeObj = modes.find(mode => mode.path === pathSegment);
+  const currentMode = currentModeObj ? currentModeObj.key : null;
 
   if (isCompactMode) {
     const currentChapter = chapters.find(ch =>
@@ -149,7 +169,7 @@ const LessonList = ({
                       key={mode.key}
                       onClick={() => {
                         if (currentMode !== mode.key) {
-                          navigate(`/${mode.key}/${currentLesson.id}`);
+                          navigate(`/${mode.path}/${currentLesson.id}`);
                         }
                       }}
                       sx={{
@@ -173,6 +193,11 @@ const LessonList = ({
                           },
                         }}
                       />
+                      <div key={mode.key}>
+                        {isDoneStatus(currentLesson.id, mode.key) && (
+                          <img src={tick} alt=" " className="w-6 h-6" />
+                        )}
+                      </div>
                     </ListItemButton>
                   ))}
                 </List>
@@ -233,6 +258,12 @@ const LessonList = ({
                           },
                         }}
                       />
+                      <div key={lesson.id}>
+                        {isHome
+                          ? isLessonComplete(lesson.id) && <img src={tick} alt=" " className="w-6 h-6" />
+                          : activeMode && isDoneStatus(lesson.id, activeMode) && <img src={tick} alt=" " className="w-6 h-6" />
+                        }
+                      </div>
                     </ListItemButton>
                   ))}
                 </List>
