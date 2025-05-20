@@ -140,6 +140,14 @@ export interface UserPoint {
   point: number;
 }
 
+export interface TestInfo {
+  id: number;
+  title: string;
+  total_score: number;
+  pass_score: number;
+  duration_minutes: number;
+}
+
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
   try {
@@ -326,7 +334,7 @@ export const fetchUserPoint = async (): Promise<UserPoint> => {
 };
 
 // Cập nhật điểm user (tăng/giảm)
-export const updateUserPoint = async (data: { point: number; type: 'add' | 'set' }) => {
+export const updateUserPoint = async (data: { point: number; type: "add" | "set" }) => {
   try {
     const response = await api.patch("/point", { 
       user_point: {
@@ -354,6 +362,16 @@ export const updateLessonStatus = async (
     return response.data;
   } catch (error) {
     console.error("Error updating lesson status:", error);
+    throw error;
+  }
+};
+
+export const getTests = async (lessonId: number): Promise<TestInfo>=> {
+  try {
+    const response = await api.get(`/lessons/${lessonId}/tests`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching tests:", error);
     throw error;
   }
 };

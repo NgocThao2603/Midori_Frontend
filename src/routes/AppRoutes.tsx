@@ -10,6 +10,7 @@ import Register from "../pages/auth/Register";
 import PracticePhrase from "../pages/PracticePhrase";
 import Translate from "../pages/Translate";
 import Listen from "../pages/Listen";
+import Test from "../pages/Test";
 import PracticeTranslate from "../pages/PracticeTranslate";
 import PracticeListen from "../pages/PracticeListen";
 
@@ -31,6 +32,7 @@ const  AppRoutes = () => {
           <Route path="/learn-phrase/:lessonId" element={<LearnPhrase/>}></Route>
           <Route path="/translate/:lessonId" element={<Translate/>}></Route>
           <Route path="/listen/:lessonId" element={<Listen/>}></Route>
+          <Route path="/test/:lessonId" element={<Test/>}></Route>
         </Route>
         <Route path="/practice-phrase/:lessonId" element={<ProtectedRoute><PracticePhrase/></ProtectedRoute>} />
         <Route path="/practice-translate/:lessonId" element={<ProtectedRoute><PracticeTranslate/></ProtectedRoute>} />
