@@ -148,6 +148,18 @@ export interface TestInfo {
   duration_minutes: number;
 }
 
+export interface TestAttempt {
+  id: number;
+  test_id: number;
+  user_id: number;
+  status: "in_progress" | "completed" | "abandoned";
+  score: number | null;
+  start_time: string;
+  end_time: string | null;
+  answered_count: number;
+  created_at: string;
+}
+
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
   try {
@@ -372,6 +384,19 @@ export const getTests = async (lessonId: number): Promise<TestInfo>=> {
     return response.data;
   } catch (error) {
     console.error("Error fetching tests:", error);
+    throw error;
+  }
+};
+
+export const fetchTestAttemptsByTestId = async (testId: number): Promise<TestAttempt[]> => {
+  try {
+    const response = await api.get(`/test_attempts`, {
+      params: { test_id: testId }
+    });
+    return response.data;
+    
+  } catch (error) {
+    console.error('Error fetching test attempts:', error);
     throw error;
   }
 };
