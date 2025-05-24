@@ -19,7 +19,7 @@ const Sidebar = () => {
   const isFromLessonSection = state?.fromLessonSection;
 
   // Tách lessonId từ URL nếu có
-  const matchLessonId = location.pathname.match(/\/(learn-phrase|translate|listen)\/(\d+)/);
+  const matchLessonId = location.pathname.match(/\/(learn-phrase|translate|listen|test)\/(\d+)/);
   const lessonId = matchLessonId ? matchLessonId[2] : "1";
 
   const menuItems = [
@@ -27,7 +27,7 @@ const Sidebar = () => {
     { name: "Học cụm từ", path: `/learn-phrase/${lessonId}`, icon: flashcard_logo },
     { name: "Luyện dịch", path: `/translate/${lessonId}`, icon: pencil },
     { name: "Luyện nghe", path: `/listen/${lessonId}`, icon: headphones },
-    { name: "Làm bài test", path: "/test", icon: test },
+    { name: "Làm bài test", path: `/test/${lessonId}`, icon: test },
     { name: "Xếp hạng", path: "/ranking", icon: leaderboard },
     { name: "Kết quả", path: "/result", icon: result },
   ];

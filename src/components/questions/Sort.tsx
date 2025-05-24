@@ -379,14 +379,15 @@ type SortProps = {
   tokens: ExampleToken[];
   onSelect: (answer: number[]) => void;
   selectedIds: number[];
-  checkResult: "correct" | "incorrect" | null;
-  isChecked: boolean;
+  checkResult?: "correct" | "incorrect" | null;
+  isChecked?: boolean;
   audioFiles: AudioFile[];
   mode: "translate" | "listen";
   onPlay: (url: string) => Promise<void>;
   isPlaying: boolean;
   currentQuestionId: number;
   meaning?: string;
+  doMode: "practice" | "test";
 };
 
 export default function Sort({
@@ -401,7 +402,8 @@ export default function Sort({
   onPlay,
   isPlaying,
   currentQuestionId,
-  meaning
+  meaning,
+  doMode
 }: SortProps) {
   const [selected, setSelected] = useState<ExampleToken[]>([]);
   const [available, setAvailable] = useState<ExampleToken[]>([]);
@@ -668,7 +670,7 @@ export default function Sort({
                     key={`avail-${token.id}`}
                     draggableId={`avail-${token.id}`}
                     index={availableIndex}
-                    isDragDisabled={isChecked}
+                    isDragDisabled={doMode === "practice" && isChecked}
                   >
                     {(provided, snapshot) => (
                       <div
@@ -681,7 +683,7 @@ export default function Sort({
                           cursor-pointer transition-all duration-100
                           ${snapshot.isDragging ? "opacity-70 scale-105 shadow-lg" : ""}
                           ${getStyle(token.id, availableIndex, false)}
-                          ${isChecked ? "pointer-events-none" : ""}
+                          ${doMode === "practice" && isChecked ? "pointer-events-none" : ""}
                           ${isInSelected ? "bg-gray-500 text-white" : ""}
                         `}
                       >
@@ -697,12 +699,14 @@ export default function Sort({
         </Droppable>
       </DragDropContext>
 
-      <AnswerResult
-        result={checkResult}
-        correctText={isChecked ? renderCorrectOrder() : ""}
-        resultAudioUrl={questionAudio?.audio_url}
-        meaning={meaning}
-      />
+      {doMode === "practice" && (
+        <AnswerResult
+          result={checkResult ?? null}
+          correctText={isChecked ? renderCorrectOrder() : ""}
+          resultAudioUrl={questionAudio?.audio_url}
+          meaning={meaning}
+        />
+      )}
     </div>
   );
 }

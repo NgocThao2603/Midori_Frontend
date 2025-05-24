@@ -110,6 +110,8 @@ const LessonList = ({
         targetPath = `/translate/${lessonId}`;
       } else if (location.pathname.startsWith("/listen")) {
         targetPath = `/listen/${lessonId}`;
+      } else if (location.pathname.startsWith("/test")) {
+        targetPath = `/test/${lessonId}`;
       }
   
       navigate(targetPath);

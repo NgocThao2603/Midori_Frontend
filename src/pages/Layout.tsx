@@ -6,6 +6,7 @@ import Calendar from "../components/Calendar";
 import { LessonScrollProvider } from "../contexts/LessonScrollContext";
 import { LessonStatusProvider } from "../contexts/LessonStatusContext";
 import { useState } from "react";
+import background from "../assets/background.png";
 
 const getModeFromPath = (
   pathname: string
@@ -49,6 +50,16 @@ const Layout = () => {
                 <LessonList level={level} onChapterToggle={(id) => setActiveChapterId(id)} displayMode={displayMode} activeMode={activeMode} />
               </div>
             </div>
+            {displayMode && (
+              <div
+                className="fixed bottom-[-8vh] right-0 w-[20vw] h-[36vh] bg-repeat-x bg-bottom opacity-100 z-0 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${background})`,
+                  backgroundPosition: "left bottom",
+                  backgroundSize: "auto 100%",
+                }}
+              ></div>
+            )}
           </div>
         </div>
       </LessonScrollProvider>

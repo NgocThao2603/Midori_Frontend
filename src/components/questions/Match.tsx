@@ -8,10 +8,11 @@ type MatchProps = {
   choices: { id: number; choice: string; is_correct?: boolean }[];
   onSelect: (answer: number[]) => void;
   selectedIds: number[];
-  checkResult: "correct" | "incorrect" | null;
-  isChecked: boolean;
+  checkResult?: "correct" | "incorrect" | null;
+  isChecked?: boolean;
   audioFiles: AudioFile[];
   meaning?: string;
+  doMode: "practice" | "test";
 };
 
 export default function Match({
@@ -23,6 +24,7 @@ export default function Match({
   isChecked,
   audioFiles,
   meaning,
+  doMode
 }: MatchProps) {
   const numBlanks = (questionTitle.match(/___/g) || []).length;
   const [localSelected, setLocalSelected] = useState<number[]>(selectedIds || []);
@@ -273,13 +275,13 @@ export default function Match({
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         onClick={() => handleClickChoice(choice.id)}
-                        disabled={isChecked}
+                        disabled={doMode === "practice" && isChecked}
                         className={`
                           px-4 py-2 border rounded-md text-lg font-medium 
                           transition-all duration-100
                           ${snapshot.isDragging ? "opacity-70 scale-105 shadow-md" : ""}
                           ${getStyleForChoice(choice.id)}
-                          ${isChecked ? "pointer-events-none" : ""}
+                          ${doMode === "practice" && isChecked ? "pointer-events-none" : ""}
                         `}
                       >
                         {choice.choice}
@@ -294,12 +296,14 @@ export default function Match({
         </Droppable>
       </DragDropContext>
 
-      <AnswerResult
-        result={checkResult}
-        correctText={isChecked ? renderCorrectAnswerText() : ""}
-        resultAudioUrl={questionAudio?.audio_url}
-        meaning={meaning}
-      />
+      {doMode === "practice" && (
+        <AnswerResult
+          result={checkResult ?? null}
+          correctText={isChecked ? renderCorrectAnswerText() : ""}
+          resultAudioUrl={questionAudio?.audio_url}
+          meaning={meaning}
+        />
+      )}
     </div>
   );
 }
