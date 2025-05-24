@@ -4,7 +4,7 @@ import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
 import doneTicker from "../assets/doneTicker.png"; 
 import point from "../assets/point.png";
-import { getTests, TestInfo, fetchTestAttemptsByTestId, TestAttempt } from "../services/api";
+import { getTests, TestInfo, fetchTestAttemptsByTestId, TestAttempt, createTestAttempt } from "../services/api";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { Select, MenuItem, FormControl, TablePagination } from "@mui/material";
@@ -32,6 +32,9 @@ const Test: React.FC = () => {
   ] as const;
 
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const inProgressAttempt = testAttempts.find(
+    attempt => attempt.status === "in_progress"
+  );
 
   const filteredAttempts = useMemo(() => 
     testAttempts.filter((attempt) => {
@@ -67,6 +70,29 @@ const Test: React.FC = () => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleClick = async () => {
+    try {
+      if (!selectedTest?.id) {
+        console.error("No test selected");
+        return;
+      }
+
+      if (inProgressAttempt) {
+        navigate(`/practice-test/${inProgressAttempt.id}`);
+        return;
+      }
+
+      const testAttempt = await createTestAttempt(selectedTest.id);
+      if (!testAttempt?.id) {
+        console.error("Invalid test attempt response");
+        return;
+      }
+      navigate(`/practice-test/${testAttempt.id}`);
+    } catch (error) {
+      console.error("Lỗi khi tạo test_attempt:", error);
+    }
   };
 
   useEffect(() => {
@@ -195,13 +221,18 @@ const Test: React.FC = () => {
       <div className="-mb-2">
         <Button
           variant="contained"
-          onClick={() => navigate(`/practice-test/${lessonId}`)}
+          onClick={handleClick}
           className="!bg-cyan_border hover:!bg-secondary !text-white !font-bold !text-xl !px-6 !py-4 !mt-6 !rounded-lg !focus:outline-none"
           sx={{
             "&:focus": { outline: "none", boxShadow: "none" },
           }}
         >
-          {done ? "LÀM LẠI" : "BẮT ĐẦU BÀI TEST"}
+          {inProgressAttempt 
+            ? "TIẾP TỤC" 
+            : done 
+              ? "LÀM LẠI" 
+              : "BẮT ĐẦU BÀI TEST"
+          }
         </Button>
       </div>
 
@@ -314,7 +345,7 @@ const Test: React.FC = () => {
                       <td className="py-3 px-4 text-center">
                         <Button
                           onClick={() => navigate(`/test-result/${attempt.id}`)}
-                          className="min-w-0 !p-1"
+                          className="min-w-0 !p-1 focus:outline-none"
                         >
                           <RemoveRedEyeIcon className="text-cyan_text" />
                         </Button>

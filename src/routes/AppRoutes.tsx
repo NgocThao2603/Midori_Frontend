@@ -13,6 +13,8 @@ import Listen from "../pages/Listen";
 import Test from "../pages/Test";
 import PracticeTranslate from "../pages/PracticeTranslate";
 import PracticeListen from "../pages/PracticeListen";
+import PracticeTest from "../pages/PracticeTest";
+// import TestDetail from "../components/test_attempts/TestDetail";
 
 const  AppRoutes = () => {
   return (
@@ -37,6 +39,8 @@ const  AppRoutes = () => {
         <Route path="/practice-phrase/:lessonId" element={<ProtectedRoute><PracticePhrase/></ProtectedRoute>} />
         <Route path="/practice-translate/:lessonId" element={<ProtectedRoute><PracticeTranslate/></ProtectedRoute>} />
         <Route path="/practice-listen/:lessonId" element={<ProtectedRoute><PracticeListen/></ProtectedRoute>} />
+        <Route path="/practice-test/:attemptId" element={<ProtectedRoute><PracticeTest/></ProtectedRoute>} />
+        {/* <Route path="/test-result/:attemptId" element={<TestDetail/>}></Route> */}
       </Routes>
     </>
   );

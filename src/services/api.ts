@@ -158,6 +158,21 @@ export interface TestAttempt {
   end_time: string | null;
   answered_count: number;
   created_at: string;
+  test: {
+    id: number;
+    lesson_id: number;
+    duration_minutes: number;
+  };
+  questions: {
+    question_id: number;
+    question_type: "choice" | "matching" | "sorting" | "fill_blank";
+  }[];
+}
+
+export interface TestAnswer {
+  question_id: number;
+  answer: string | number | number[];
+  is_correct: boolean;
 }
 
 // Đăng nhập user
@@ -236,7 +251,7 @@ export const getLessonStatuses = async () => {
 // Hàm fetch từ vựng theo lessonId
 export const fetchVocabulariesByLesson = async (lessonId: string | undefined): Promise<{ vocabList: Vocabulary[], flashcards: Flashcard[] }> => {
   try {
-    const response = await axios.get<Vocabulary[]>(`http://localhost:3000/api/vocabularies/lesson/${lessonId}`);
+    const response = await api.get<Vocabulary[]>(`/vocabularies/lesson/${lessonId}`);
     
     if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
       console.warn("No valid data received");
@@ -396,7 +411,47 @@ export const fetchTestAttemptsByTestId = async (testId: number): Promise<TestAtt
     return response.data;
     
   } catch (error) {
-    console.error('Error fetching test attempts:', error);
+    console.error("Error fetching test attempts:", error);
+    throw error;
+  }
+};
+
+export const fetchTestAttempt = async (id: number): Promise<TestAttempt> => {
+  try {
+    const res = await api.get(`/test_attempts/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching test attempt:", error);
+    throw error;
+  }
+};
+
+export const createTestAttempt = async (test_id: number): Promise<TestAttempt> => {
+  try {
+    const res = await api.post(`/test_attempts`, { test_id });
+    return res.data;
+  } catch (error) {
+    console.error("Error creating test attempt:", error);
+    throw error;
+  }
+};
+
+export const updateOrCreateTestAnswers = async (testAttemptId: number, answers: TestAnswer[]) => {
+  try {
+    const response = await api.post(`/test_attempts/${testAttemptId}/test_answers/update_or_create`, {
+      test_answer: answers,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTestAnswersByTestAttempt = async (testAttemptId: number): Promise<TestAnswer[]> => {
+  try {
+    const response = await api.get(`/test_attempts/${testAttemptId}/test_answers`);
+    return response.data;
+  } catch (error) {
     throw error;
   }
 };

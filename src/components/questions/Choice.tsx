@@ -6,13 +6,24 @@ type ChoiceProps = {
   choices: { id: number; choice: string, is_correct?: boolean }[];
   onSelect: (id: number) => void;
   selectedId: number | null;
-  checkResult: "correct" | "incorrect" | null;
-  isChecked: boolean;
+  checkResult?: "correct" | "incorrect" | null;
+  isChecked?: boolean;
   audioFiles: AudioFile[];
   meaning?: string;
+  doMode: "practice" | "test";
 };
 
-export default function Choice({ questionTitle, choices, onSelect, selectedId, checkResult, isChecked, audioFiles, meaning }: ChoiceProps) {
+export default function Choice({
+  questionTitle, 
+  choices, 
+  onSelect, 
+  selectedId,
+  checkResult,
+  isChecked = false,
+  audioFiles,
+  meaning,
+  doMode
+}: ChoiceProps) {
   const questionAudio = audioFiles.find(
     (file) => file.audio_type === "example" || file.audio_type === "vocab" || file.audio_type === "phrase"
   );
@@ -50,9 +61,9 @@ export default function Choice({ questionTitle, choices, onSelect, selectedId, c
               className={`
                 flex items-center justify-start gap-2 px-6 py-10 border rounded-xl text-left focus:outline-none text-2xl
                 ${buttonStyle}
-                ${isChecked ? "pointer-events-none" : "hover:border-cyan_border hover:bg-cyan_pastel transition-colors"}        
+                ${doMode === "practice" && isChecked ? "pointer-events-none" : "hover:border-cyan_border hover:bg-cyan_pastel transition-colors"}        
               `}
-              disabled={isChecked}
+              disabled={doMode === "practice" && isChecked}
             >
               <span className={`mr-4 font-bold`}>
                 {index + 1}
@@ -63,12 +74,14 @@ export default function Choice({ questionTitle, choices, onSelect, selectedId, c
         })}
       </div>
 
-      <AnswerResult
-        result={checkResult}
-        correctText={choices.find(c => c.is_correct)?.choice}
-        resultAudioUrl={questionAudio?.audio_url}
-        meaning={meaning}
-      />
+      {doMode === "practice" && (
+        <AnswerResult
+          result={checkResult ?? null}
+          correctText={choices.find(c => c.is_correct)?.choice}
+          resultAudioUrl={questionAudio?.audio_url}
+          meaning={meaning}
+        />
+      )}
     </div>
   );
 }

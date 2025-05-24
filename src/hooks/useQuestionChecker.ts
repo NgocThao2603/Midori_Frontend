@@ -12,14 +12,26 @@ type ResultsState = {
   [questionId: number]: CheckResult;
 };
 
-export function useQuestionChecker(questions: Question[]) {
+export function useQuestionChecker(questions: Question[], doMode: "practice" | "test" = "practice") {
   const [userAnswers, setUserAnswers] = useState<UserAnswersState>({});
   const [results, setResults] = useState<ResultsState>({});
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
 
   const setAnswer = (questionId: number, answer: UserAnswer) => {
-    if (!checkedIds.includes(questionId)) {
-      setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    // Trong practice mode, không cho phép thay đổi đáp án sau khi đã kiểm tra
+    if (doMode === "practice" && checkedIds.includes(questionId)) {
+      return;
+    }  
+    // Trong test mode, cho phép thay đổi đáp án
+    setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    // Nếu là test mode và câu hỏi đã được kiểm tra, xóa kết quả cũ khi đáp án thay đổi
+    if (doMode === "test" && checkedIds.includes(questionId)) {
+      setResults((prev) => {
+        const newResults = { ...prev };
+        delete newResults[questionId];
+        return newResults;
+      });
+      setCheckedIds((prev) => prev.filter(id => id !== questionId));
     }
   };
 

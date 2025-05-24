@@ -236,7 +236,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
     isChecked,
     setAnswer,
     checkAnswer,
-  } = useQuestionChecker(questions);
+  } = useQuestionChecker(questions, "practice");
 
   const handleAudio = async (url: string) => {
     try {
@@ -397,7 +397,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
             }
           } else {
             if (index <= currentSlide) {
-              colorClass = "bg-secondary";
+              colorClass = "bg-cyan_border";
             } else {
               colorClass = "bg-gray-300";
             }
@@ -438,6 +438,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
+                doMode="practice"
               />
             )}
 
@@ -451,6 +452,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
+                doMode="practice"
               />
             )}
 
@@ -468,6 +470,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 isPlaying={isPlaying}
                 currentQuestionId={currentSlide}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
+                doMode="practice"
               />
             )}
             {question.question_type === "fill_blank" && (
@@ -480,6 +483,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 audioFiles={audioFiles}
                 mode={mode}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
+                doMode="practice"
               />
             )}
 
