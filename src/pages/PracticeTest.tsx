@@ -69,6 +69,7 @@ const PracticeTest = () => {
         lessonMeanings={lessonMeanings} 
         start_time={testAttempt.start_time}
         duration_minutes={testAttempt.test.duration_minutes}
+        pass_score={testAttempt.test.pass_score}
       />
     </div>
   );

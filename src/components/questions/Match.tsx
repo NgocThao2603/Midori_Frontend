@@ -7,6 +7,7 @@ type MatchProps = {
   questionTitle: string;
   choices: { id: number; choice: string; is_correct?: boolean }[];
   onSelect: (answer: number[]) => void;
+  savedAnswer?: number[];
   selectedIds: number[];
   checkResult?: "correct" | "incorrect" | null;
   isChecked?: boolean;
@@ -18,6 +19,7 @@ type MatchProps = {
 export default function Match({
   questionTitle,
   choices,
+  savedAnswer,
   onSelect,
   selectedIds,
   checkResult,
@@ -27,7 +29,9 @@ export default function Match({
   doMode
 }: MatchProps) {
   const numBlanks = (questionTitle.match(/___/g) || []).length;
-  const [localSelected, setLocalSelected] = useState<number[]>(selectedIds || []);
+  const [localSelected, setLocalSelected] = useState<number[]>(
+    savedAnswer || selectedIds || []
+  );
 
   useEffect(() => {
     onSelect(localSelected);
@@ -36,6 +40,28 @@ export default function Match({
   const questionAudio = audioFiles.find(
     (file) => file.audio_type === "phrase"
   );
+
+    // Effect to handle savedAnswer changes
+  useEffect(() => {
+    if (doMode === "test" && savedAnswer?.length) {
+      setLocalSelected(savedAnswer);
+      onSelect(savedAnswer);
+    }
+  }, [savedAnswer, doMode]);
+
+  // Effect to sync localSelected with parent
+  useEffect(() => {
+    if (selectedIds?.length && !localSelected.length) {
+      setLocalSelected(selectedIds);
+    }
+  }, [selectedIds]);
+
+  // Sync changes to parent
+  useEffect(() => {
+    if (localSelected.length) {
+      onSelect(localSelected);
+    }
+  }, [localSelected]);
 
   const getChoiceById = (id: number) => choices.find((c) => c.id === id);
 

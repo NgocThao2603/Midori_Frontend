@@ -1,13 +1,13 @@
 import { addMinutes, parseISO } from "date-fns";
 import { Carousel } from "antd";
 import { CarouselRef } from "antd/es/carousel";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import ArrowBackIosOutlined from "@mui/icons-material/ArrowBackIosNewOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { Button } from "@mui/material";
-import { AudioFile, getTestAnswersByTestAttempt, Question, TestAnswer, updateLessonStatus, updateOrCreateTestAnswers, updateUserPoint } from "../../services/api";
+import { AudioFile, getTestAnswersByTestAttempt, Question, submitTestAttempt, TestAnswer, updateOrCreateTestAnswers } from "../../services/api";
 import { fetchAudioFiles } from "../../services/AudioService";
 import { getMeaningForQuestion } from "../../services/questionService";
 import { LessonMeaning } from "../../services/api";
@@ -17,6 +17,8 @@ import Sort from "./Sort";
 import FillBlank from "./FillBlank";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
 import timer from "../../assets/timer.png";
+import ResultTestPopup from "../shared/ResultTestPopup";
+import { formatDuration } from "../../services/timeService";
 
 type TestTemplateProps = {
   questions: Question[];
@@ -25,6 +27,7 @@ type TestTemplateProps = {
   lessonMeanings?: LessonMeaning[];
   start_time: string;
   duration_minutes: number;
+  pass_score: number;
 };
 
 export default function TestTemplate({
@@ -33,7 +36,8 @@ export default function TestTemplate({
   attemptId,
   lessonMeanings, 
   start_time,
-  duration_minutes 
+  duration_minutes,
+  pass_score 
 }: TestTemplateProps) {
   const TOTAL_QUESTIONS = questions.length;
   const WARNING_TIME = 300;
@@ -51,6 +55,16 @@ export default function TestTemplate({
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: any }>({});
   const [waitingToSaveId, setWaitingToSaveId] = useState<number | null>(null);
+  const [isLoadingSavedAnswers, setIsLoadingSavedAnswers] = useState(true);
+
+  const [showResult, setShowResult] = useState(false);
+  const [submitResult, setSubmitResult] = useState<{
+    score: number;
+    status: "pass" | "fail";
+    answer_count: number;
+    correct_count: number;
+    wrong_count: number;
+  } | null>(null);
 
   const {
     userAnswers,
@@ -58,6 +72,7 @@ export default function TestTemplate({
     isChecked,
     setAnswer,
     checkAnswer,
+    setInitialAnswers,
   } = useQuestionChecker(questions, "test");
 
   const handleAudio = async (url: string) => {
@@ -91,6 +106,67 @@ export default function TestTemplate({
     });
     setQuestionModes(modes);
   }, [questions]);
+
+// Sau đó dùng stableSetInitialAnswer trong useEffect
+  useEffect(() => {
+    const loadSavedAnswers = async () => {
+      try {
+        setIsLoadingSavedAnswers(true);
+        const savedData = await getTestAnswersByTestAttempt(attemptId);
+        console.log("Data:", savedData)
+        
+        const answersMap: { [key: number]: any } = {};
+        const questionIds: number[] = [];
+        
+        savedData.forEach(item => {
+          const question = questions.find(q => q.id === item.question_id);
+          if (!question) return;
+
+          // Format answer based on question type
+          let formattedAnswer;
+          try {
+            switch (question.question_type) {
+              case "choice":
+                formattedAnswer = Number(item.answer_text);
+                break;
+              case "matching":
+              case "sorting":
+                formattedAnswer = typeof item.answer_text === "string"
+                  ? JSON.parse(item.answer_text)
+                  : item.answer_text;
+                break;
+              case "fill_blank":
+                formattedAnswer = item.answer_text;
+                break;
+              default:
+                formattedAnswer = item.answer_text;
+            }
+
+            answersMap[item.question_id] = formattedAnswer;
+            questionIds.push(item.question_id);
+            
+            console.log("Formatted answer for question", item.question_id, ":", formattedAnswer);
+          } catch (err) {
+            console.error("Error formatting answer for question", item.question_id, err);
+          }
+        });
+        
+        // Batch update
+        setInitialAnswers(answersMap);  
+        setSavedAnswers(answersMap);
+        setSavedQuestions(questionIds);
+
+      } catch (error) {
+        console.error("Failed to load saved answers:", error);
+      } finally {
+        setIsLoadingSavedAnswers(false);
+      }
+    };
+
+    if (attemptId) {
+      loadSavedAnswers();
+    }
+  }, [attemptId]);
 
   // Dừng audio khi:
   // 1. Chuyển slide
@@ -155,6 +231,7 @@ export default function TestTemplate({
       setIsPlaying(false);
     }
   }, [isChecked, currentSlide]);
+  
   const handleProgressBarClick = (index: number) => {
     if (carouselRef.current) {
       carouselRef.current.goTo(index);
@@ -171,6 +248,26 @@ export default function TestTemplate({
     console.log("User answer:", answer);
     checkAnswer(questionId);
     setWaitingToSaveId(questionId); // đánh dấu sẽ lưu sau khi result có
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const result = await submitTestAttempt(attemptId);
+      const isPass = result.score >= pass_score;
+      const correct = result.correct_count || 0;
+      const wrong = (result.answer_count || 0) - correct;
+
+      setSubmitResult({
+        score: result.score,
+        status: isPass ? "pass" : "fail",
+        answer_count: result.answer_count,
+        correct_count: correct,
+        wrong_count: wrong
+      });
+      setShowResult(true);
+    } catch (error) {
+      console.error("Error submitting test:", error);
+    }
   };
 
   useEffect(() => {
@@ -210,32 +307,6 @@ export default function TestTemplate({
 
     saveAnswer();
   }, [results, waitingToSaveId]);
-
-  // Dang loi chua hien thi dap an o cac component con
-  // useEffect(() => {
-  //   const loadSavedAnswers = async () => {
-  //     try {
-  //       const savedData = await getTestAnswersByTestAttempt(attemptId);
-  //       // Process và set vào state
-  //       const answersMap: { [key: number]: any } = {};
-  //       const questionIds: number[] = [];
-        
-  //       savedData.forEach(item => {
-  //         answersMap[item.question_id] = item.answer;
-  //         questionIds.push(item.question_id);
-  //         // Set answer vào useQuestionChecker
-  //         setAnswer(item.question_id, item.answer);
-  //       });
-        
-  //       setSavedAnswers(answersMap);
-  //       setSavedQuestions(questionIds);
-  //     } catch (error) {
-  //       console.error("Failed to load saved answers:", error);
-  //     }
-  //   };
-
-  //   loadSavedAnswers();
-  // }, []);
 
   const hasAnswerChanged = (questionId: number) => {
     // Nếu câu hỏi chưa được lưu lần nào, coi như có thay đổi
@@ -352,10 +423,10 @@ export default function TestTemplate({
 
           let colorClass = "bg-gray-300";
 
-          if (isSaved) {
-            colorClass = "bg-secondary";
-          } else if (index === currentSlide) {
+          if (index === currentSlide) {
             colorClass = "bg-cyan_border"; 
+          } else if (isSaved) {
+            colorClass = "bg-secondary";
           }
           return (
             <div
@@ -366,6 +437,19 @@ export default function TestTemplate({
             />
           );
         })}
+
+        <div className="">
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            className="!bg-secondary hover:!bg-cyan_border !text-white !font-bold !text-xl !px-6 !py-4 !rounded-lg !focus:outline-none"
+            sx={{
+              "&:focus": { outline: "none", boxShadow: "none" },
+            }}
+          >
+            Nộp bài
+          </Button>
+        </div>
 
         <CloseOutlinedIcon
           style={{ fontSize: 40 }}
@@ -399,6 +483,7 @@ export default function TestTemplate({
               <Choice
                 questionTitle={question.question}
                 choices={question.choices}
+                savedAnswer={savedAnswers[question.id] as number}
                 selectedId={userAnswers[question.id] as number}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
@@ -411,6 +496,7 @@ export default function TestTemplate({
               <Match
                 questionTitle={question.question}
                 choices={question.choices}
+                savedAnswer={savedAnswers[question.id] as number[]}
                 selectedIds={userAnswers[question.id] as number[]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
@@ -423,6 +509,7 @@ export default function TestTemplate({
               <Sort
                 questionTitle={question.question}
                 tokens={question.example_tokens || []}
+                savedAnswer={savedAnswers[question.id] as number[]}
                 selectedIds={userAnswers[question.id] as number[]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
@@ -437,6 +524,7 @@ export default function TestTemplate({
             {question.question_type === "fill_blank" && (
               <FillBlank
                 questionTitle={question.question}
+                savedAnswer={savedAnswers[question.id] as string}
                 onSelect={(answer) => setAnswer(question.id, answer)}
                 correct_answers={question.correct_answers}
                 audioFiles={audioFiles}
@@ -454,7 +542,7 @@ export default function TestTemplate({
                 className={`
                   !font-bold !text-xl !px-6 !py-4 !mt-6 !rounded-lg !focus:outline-none
                   ${isButtonDisabled(question.id)
-                    ? "!bg-secondary !text-white cursor-not-allowed opacity-50" 
+                    ? "!bg-secondary !text-white cursor-not-allowed opacity-60" 
                     : "!bg-cyan_border hover:!bg-secondary !text-white"
                   }
                 `}
@@ -479,6 +567,24 @@ export default function TestTemplate({
           <ArrowForwardIosOutlinedIcon style={{ fontSize: 72 }} />
         </button>
       </div>
+
+      {/* Result popup */}
+      {submitResult && (
+        <ResultTestPopup
+          open={showResult}
+          onClose={() => {
+            setShowResult(false);
+            navigate(getBackRoute(), { replace: true });
+          }}
+          score={submitResult.score}
+          status={submitResult.status}
+          answer_count={submitResult.answer_count}
+          total_questions={questions.length}
+          duration={formatDuration(start_time, new Date().toISOString(), duration_minutes)}
+          correct_count={submitResult.correct_count}
+          wrong_count={submitResult.wrong_count}
+        />
+      )}
     </div>
   );
 }

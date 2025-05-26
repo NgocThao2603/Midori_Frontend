@@ -378,6 +378,7 @@ type SortProps = {
   questionTitle: string;
   tokens: ExampleToken[];
   onSelect: (answer: number[]) => void;
+  savedAnswer?: number[];
   selectedIds: number[];
   checkResult?: "correct" | "incorrect" | null;
   isChecked?: boolean;
@@ -394,6 +395,7 @@ export default function Sort({
   questionTitle,
   tokens = [],
   selectedIds = [],
+  savedAnswer,
   onSelect,
   checkResult,
   isChecked,
@@ -413,6 +415,25 @@ export default function Sort({
       file.audio_type === "example" && 
       file.example_id === tokens[0]?.example_id
   );
+
+  useEffect(() => {
+    if (doMode === "test" && savedAnswer?.length && selected.length === 0) {
+      // Find tokens based on saved answer order
+      const selectedTokens = savedAnswer.map(id => 
+        tokens.find(t => t.id === id)
+      ).filter((t): t is ExampleToken => t !== undefined);
+      
+      setSelected(selectedTokens);
+      
+      // Update available tokens
+      const selectedIds = new Set(savedAnswer);
+      const availableTokens = shuffledTokens.filter(t => !selectedIds.has(t.id));
+      setAvailable(availableTokens);
+
+      // Notify parent
+      onSelect(savedAnswer);
+    }
+  }, [savedAnswer, doMode, tokens]);
 
   useEffect(() => {
     if (mode === "listen" && questionAudio?.audio_url) {

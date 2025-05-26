@@ -159,6 +159,7 @@ export interface TestAttempt {
   answered_count: number;
   created_at: string;
   test: {
+    pass_score: number;
     id: number;
     lesson_id: number;
     duration_minutes: number;
@@ -170,6 +171,7 @@ export interface TestAttempt {
 }
 
 export interface TestAnswer {
+  answer_text: any;
   question_id: number;
   answer: string | number | number[];
   is_correct: boolean;
@@ -452,6 +454,16 @@ export const getTestAnswersByTestAttempt = async (testAttemptId: number): Promis
     const response = await api.get(`/test_attempts/${testAttemptId}/test_answers`);
     return response.data;
   } catch (error) {
+    throw error;
+  }
+};
+
+export const submitTestAttempt = async (testAttemptId: number) => {
+  try {
+    const response = await api.post(`/test_attempts/${testAttemptId}/submit`);
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting test:", error);
     throw error;
   }
 };

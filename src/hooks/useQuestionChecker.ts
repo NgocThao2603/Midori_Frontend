@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Question } from "../services/api";
 
 export type UserAnswer = string | number | number[] | string[] | null;
@@ -17,7 +17,7 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
   const [results, setResults] = useState<ResultsState>({});
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
 
-  const setAnswer = (questionId: number, answer: UserAnswer) => {
+  const setAnswer = useCallback((questionId: number, answer: UserAnswer) => {
     // Trong practice mode, không cho phép thay đổi đáp án sau khi đã kiểm tra
     if (doMode === "practice" && checkedIds.includes(questionId)) {
       return;
@@ -33,9 +33,9 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
       });
       setCheckedIds((prev) => prev.filter(id => id !== questionId));
     }
-  };
+  }, [doMode, checkedIds]);
 
-  const checkAnswer = (questionId: number) => {
+  const checkAnswer = useCallback((questionId: number) => {
     const question = questions.find((q) => q.id === questionId);
     if (!question) return;
 
@@ -54,18 +54,6 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
       isCorrect =
         correctIds.length === userIds.length &&
         correctIds.every((id, index) => userIds[index] === id);
-
-      // Cach 2: So sanh text thay vi dung is_correct
-      
-      // const correctAnswers = question.correct_answers || [];
-      // const userIds = Array.isArray(userAnswer) ? userAnswer : [];
-      // const correctIds = correctAnswers.map(correctValue => {
-      //   const correctChoice = question.choices?.find(c => c.choice === correctValue);
-      //   return correctChoice?.id;
-      // });
-      // isCorrect = 
-      //   correctIds.length === userIds.length &&
-      //   correctIds.every((id, index) => id === userIds[index]);
     }      
 
     else if (question.question_type === "fill_blank") {
@@ -108,15 +96,20 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
     }));
 
     setCheckedIds((prev) => [...prev, questionId]);
-  };
+  }, [questions, userAnswers]);
 
-  const isChecked = (questionId: number) => checkedIds.includes(questionId);
+  const isChecked = useCallback((questionId: number) => checkedIds.includes(questionId), [checkedIds]);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setUserAnswers({});
     setResults({});
     setCheckedIds([]);
-  };
+  }, []);
+
+  // QUAN TRỌNG: Sử dụng useCallback để function không thay đổi reference
+  const setInitialAnswers = useCallback((answersMap: { [key: number]: UserAnswer }) => {
+    setUserAnswers(prev => ({ ...prev, ...answersMap }));
+  }, []);
 
   return {
     userAnswers,
@@ -125,5 +118,6 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
     setAnswer,
     checkAnswer,
     reset,
+    setInitialAnswers,
   };
 }

@@ -5,6 +5,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 type FillBlankProps = {
   questionTitle: string;
+  savedAnswer?: string;
   onSelect: (answer: string) => void;
   isChecked?: boolean;
   checkResult?: "correct" | "incorrect" | null;
@@ -17,6 +18,7 @@ type FillBlankProps = {
 
 export default function FillBlank({
   questionTitle,
+  savedAnswer,
   onSelect,
   isChecked,
   checkResult,
@@ -65,6 +67,13 @@ export default function FillBlank({
     return "border-gray-300 bg-white text-cyan_text";
   };
 
+  useEffect(() => {
+    if (doMode === "test" && savedAnswer && !answer) {
+      setAnswer(savedAnswer);
+      onSelect(savedAnswer);
+    }
+  }, [savedAnswer, doMode]);
+  
   // Auto resize textarea, max 8 lines
   useEffect(() => {
     const textarea = textareaRef.current;

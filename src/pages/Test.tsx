@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { Select, MenuItem, FormControl, TablePagination } from "@mui/material";
 import { StatusBadge } from "../components/StatusBadge";
+import { formatDuration } from "../services/timeService";
 
 const Test: React.FC = () => {
   const navigate = useNavigate();
@@ -96,24 +97,24 @@ const Test: React.FC = () => {
   };
 
   useEffect(() => {
-  if (lessonId) {
-    getTests(Number(lessonId)).then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        setTestList(data);
-        setSelectedIndex(0);
-        // Set rowsPerPage to 4 if there are multiple tests
-        if (data.length > 1) {
-          setRowsPerPage(4);
+    if (lessonId) {
+      getTests(Number(lessonId)).then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTestList(data);
+          setSelectedIndex(0);
+          // Set rowsPerPage to 4 if there are multiple tests
+          if (data.length > 1) {
+            setRowsPerPage(4);
+          } else {
+            setRowsPerPage(5);
+          }
         } else {
-          setRowsPerPage(5);
+          setTestList([]);
+          setSelectedIndex(0);
         }
-      } else {
-        setTestList([]);
-        setSelectedIndex(0);
-      }
-    });
-  }
-}, [lessonId]);
+      });
+    }
+  }, [lessonId]);
 
   useEffect(() => {
     const fetchTestAttempts = async () => {
@@ -139,14 +140,6 @@ const Test: React.FC = () => {
 
     fetchTestAttempts();
   }, [selectedTest?.id]);
-
-  const formatDuration = (start: string, end: string | null): string => {
-    if (!end) return "";
-    const duration = new Date(end).getTime() - new Date(start).getTime();
-    const minutes = Math.floor(duration / 60000);
-    const seconds = Math.floor((duration % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 flex flex-col items-center">
@@ -340,7 +333,7 @@ const Test: React.FC = () => {
                         {attempt.answered_count}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        {formatDuration(attempt.start_time, attempt.end_time)}
+                        {formatDuration(attempt.start_time, attempt.end_time, selectedTest?.duration_minutes)}
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Button
