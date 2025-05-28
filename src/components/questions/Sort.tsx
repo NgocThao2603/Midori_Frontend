@@ -378,21 +378,24 @@ type SortProps = {
   questionTitle: string;
   tokens: ExampleToken[];
   onSelect: (answer: number[]) => void;
+  savedAnswer?: number[];
   selectedIds: number[];
-  checkResult: "correct" | "incorrect" | null;
-  isChecked: boolean;
+  checkResult?: "correct" | "incorrect" | null;
+  isChecked?: boolean;
   audioFiles: AudioFile[];
   mode: "translate" | "listen";
   onPlay: (url: string) => Promise<void>;
   isPlaying: boolean;
   currentQuestionId: number;
   meaning?: string;
+  doMode: "practice" | "test";
 };
 
 export default function Sort({
   questionTitle,
   tokens = [],
   selectedIds = [],
+  savedAnswer,
   onSelect,
   checkResult,
   isChecked,
@@ -401,7 +404,8 @@ export default function Sort({
   onPlay,
   isPlaying,
   currentQuestionId,
-  meaning
+  meaning,
+  doMode
 }: SortProps) {
   const [selected, setSelected] = useState<ExampleToken[]>([]);
   const [available, setAvailable] = useState<ExampleToken[]>([]);
@@ -411,6 +415,25 @@ export default function Sort({
       file.audio_type === "example" && 
       file.example_id === tokens[0]?.example_id
   );
+
+  useEffect(() => {
+    if (savedAnswer?.length && selected.length === 0) {
+      // Find tokens based on saved answer order
+      const selectedTokens = savedAnswer.map(id => 
+        tokens.find(t => t.id === id)
+      ).filter((t): t is ExampleToken => t !== undefined);
+      
+      setSelected(selectedTokens);
+      
+      // Update available tokens
+      const selectedIds = new Set(savedAnswer);
+      const availableTokens = shuffledTokens.filter(t => !selectedIds.has(t.id));
+      setAvailable(availableTokens);
+
+      // Notify parent
+      onSelect(savedAnswer);
+    }
+  }, [savedAnswer, tokens]);
 
   useEffect(() => {
     if (mode === "listen" && questionAudio?.audio_url) {
@@ -668,7 +691,7 @@ export default function Sort({
                     key={`avail-${token.id}`}
                     draggableId={`avail-${token.id}`}
                     index={availableIndex}
-                    isDragDisabled={isChecked}
+                    isDragDisabled={doMode === "practice" && isChecked}
                   >
                     {(provided, snapshot) => (
                       <div
@@ -681,7 +704,7 @@ export default function Sort({
                           cursor-pointer transition-all duration-100
                           ${snapshot.isDragging ? "opacity-70 scale-105 shadow-lg" : ""}
                           ${getStyle(token.id, availableIndex, false)}
-                          ${isChecked ? "pointer-events-none" : ""}
+                          ${doMode === "practice" && isChecked ? "pointer-events-none" : ""}
                           ${isInSelected ? "bg-gray-500 text-white" : ""}
                         `}
                       >
@@ -697,12 +720,14 @@ export default function Sort({
         </Droppable>
       </DragDropContext>
 
-      <AnswerResult
-        result={checkResult}
-        correctText={isChecked ? renderCorrectOrder() : ""}
-        resultAudioUrl={questionAudio?.audio_url}
-        meaning={meaning}
-      />
+      {doMode === "practice" && (
+        <AnswerResult
+          result={checkResult ?? null}
+          correctText={isChecked ? renderCorrectOrder() : ""}
+          resultAudioUrl={questionAudio?.audio_url}
+          meaning={meaning}
+        />
+      )}
     </div>
   );
 }

@@ -5,24 +5,28 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 type FillBlankProps = {
   questionTitle: string;
+  savedAnswer?: string;
   onSelect: (answer: string) => void;
-  isChecked: boolean;
-  checkResult: "correct" | "incorrect" | null;
+  isChecked?: boolean;
+  checkResult?: "correct" | "incorrect" | null;
   correct_answers: string[] | null;
   audioFiles: AudioFile[];
   mode: "translate" | "listen";
   meaning?: string;
+  doMode: "practice" | "test";
 };
 
 export default function FillBlank({
   questionTitle,
+  savedAnswer,
   onSelect,
   isChecked,
   checkResult,
   correct_answers = [],
   audioFiles,
   mode,
-  meaning
+  meaning,
+  doMode
 }: FillBlankProps) {
   const [answer, setAnswer] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -54,15 +58,22 @@ export default function FillBlank({
     if (!isChecked) {
       return "border-cyan_border bg-cyan_pastel text-cyan_text";
     }
-    if (checkResult === "correct") {
+    if (doMode === "practice" && checkResult === "correct") {
       return "border-secondary bg-green_pastel text-secondary";
     }
-    if (checkResult === "incorrect") {
+    if (doMode === "practice" && checkResult === "incorrect") {
       return "border-red_text bg-red_pastel text-red_text";
     }
     return "border-gray-300 bg-white text-cyan_text";
   };
 
+  useEffect(() => {
+    if (savedAnswer && !answer) {
+      setAnswer(savedAnswer);
+      onSelect(savedAnswer);
+    }
+  }, [savedAnswer]);
+  
   // Auto resize textarea, max 8 lines
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -128,16 +139,18 @@ export default function FillBlank({
         />
       </div>
 
-      <AnswerResult
-        result={checkResult}
-        correctText={
-          isChecked && checkResult === "incorrect"
-            ? correct_answers?.join(", ") || undefined
-            : undefined
-        }
-        resultAudioUrl={questionAudio?.audio_url}
-        meaning={meaning}
-      />
+      {doMode === "practice" && (
+        <AnswerResult
+          result={checkResult ?? null}
+          correctText={
+            isChecked && checkResult === "incorrect"
+              ? correct_answers?.join(", ") || undefined
+              : undefined
+          }
+          resultAudioUrl={questionAudio?.audio_url}
+          meaning={meaning}
+        />
+      )}
     </div>
   );
 }

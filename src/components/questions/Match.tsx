@@ -7,25 +7,31 @@ type MatchProps = {
   questionTitle: string;
   choices: { id: number; choice: string; is_correct?: boolean }[];
   onSelect: (answer: number[]) => void;
+  savedAnswer?: number[];
   selectedIds: number[];
-  checkResult: "correct" | "incorrect" | null;
-  isChecked: boolean;
+  checkResult?: "correct" | "incorrect" | null;
+  isChecked?: boolean;
   audioFiles: AudioFile[];
   meaning?: string;
+  doMode: "practice" | "test";
 };
 
 export default function Match({
   questionTitle,
   choices,
+  savedAnswer,
   onSelect,
   selectedIds,
   checkResult,
   isChecked,
   audioFiles,
   meaning,
+  doMode
 }: MatchProps) {
   const numBlanks = (questionTitle.match(/___/g) || []).length;
-  const [localSelected, setLocalSelected] = useState<number[]>(selectedIds || []);
+  const [localSelected, setLocalSelected] = useState<number[]>(
+    savedAnswer || selectedIds || []
+  );
 
   useEffect(() => {
     onSelect(localSelected);
@@ -34,6 +40,28 @@ export default function Match({
   const questionAudio = audioFiles.find(
     (file) => file.audio_type === "phrase"
   );
+
+    // Effect to handle savedAnswer changes
+  useEffect(() => {
+    if (savedAnswer?.length) {
+      setLocalSelected(savedAnswer);
+      onSelect(savedAnswer);
+    }
+  }, [savedAnswer]);
+
+  // Effect to sync localSelected with parent
+  useEffect(() => {
+    if (selectedIds?.length && !localSelected.length) {
+      setLocalSelected(selectedIds);
+    }
+  }, [selectedIds]);
+
+  // Sync changes to parent
+  useEffect(() => {
+    if (localSelected.length) {
+      onSelect(localSelected);
+    }
+  }, [localSelected]);
 
   const getChoiceById = (id: number) => choices.find((c) => c.id === id);
 
@@ -273,13 +301,13 @@ export default function Match({
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         onClick={() => handleClickChoice(choice.id)}
-                        disabled={isChecked}
+                        disabled={doMode === "practice" && isChecked}
                         className={`
                           px-4 py-2 border rounded-md text-lg font-medium 
                           transition-all duration-100
                           ${snapshot.isDragging ? "opacity-70 scale-105 shadow-md" : ""}
                           ${getStyleForChoice(choice.id)}
-                          ${isChecked ? "pointer-events-none" : ""}
+                          ${doMode === "practice" && isChecked ? "pointer-events-none" : ""}
                         `}
                       >
                         {choice.choice}
@@ -294,12 +322,14 @@ export default function Match({
         </Droppable>
       </DragDropContext>
 
-      <AnswerResult
-        result={checkResult}
-        correctText={isChecked ? renderCorrectAnswerText() : ""}
-        resultAudioUrl={questionAudio?.audio_url}
-        meaning={meaning}
-      />
+      {doMode === "practice" && (
+        <AnswerResult
+          result={checkResult ?? null}
+          correctText={isChecked ? renderCorrectAnswerText() : ""}
+          resultAudioUrl={questionAudio?.audio_url}
+          meaning={meaning}
+        />
+      )}
     </div>
   );
 }
