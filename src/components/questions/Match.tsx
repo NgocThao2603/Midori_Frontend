@@ -43,11 +43,11 @@ export default function Match({
 
     // Effect to handle savedAnswer changes
   useEffect(() => {
-    if (doMode === "test" && savedAnswer?.length) {
+    if (savedAnswer?.length) {
       setLocalSelected(savedAnswer);
       onSelect(savedAnswer);
     }
-  }, [savedAnswer, doMode]);
+  }, [savedAnswer]);
 
   // Effect to sync localSelected with parent
   useEffect(() => {

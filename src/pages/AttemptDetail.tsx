@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchQuestionsByLesson, fetchTestAttempt, LessonMeaning, Question, TestAttempt } from "../services/api";
+import { fetchQuestionsByLesson, fetchLessonMeaningsByLesson, fetchTestAttempt, LessonMeaning, Question, TestAttempt } from "../services/api";
 import { useParams } from "react-router-dom";
-import TestTemplate from "../components/questions/TestTemplate";
+import TestDetail from "../components/test_attempts/TestDetail";
 
-const PracticeTest = () => {
+const AttemptDetail = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
   const attemptIdNumber = Number(attemptId);
 
@@ -34,6 +34,10 @@ const PracticeTest = () => {
 
         setQuestions(questionsDetailed);
 
+        // Lấy meanings cho bài test
+        const meaningsData = await fetchLessonMeaningsByLesson(attemptData.test.lesson_id);
+        setLessonMeanings(meaningsData);
+
       } catch (error) {
         console.error("Error loading test attempt questions:", error);
         setQuestions([]);
@@ -58,17 +62,14 @@ const PracticeTest = () => {
 
   return (
     <div>
-      <TestTemplate 
+      <TestDetail 
         questions={questions}
         lessonId={Number(testAttempt.test.lesson_id)}
         attemptId={Number(attemptId)} 
         lessonMeanings={lessonMeanings} 
-        start_time={testAttempt.start_time}
-        duration_minutes={testAttempt.test.duration_minutes}
-        pass_score={testAttempt.test.pass_score}
       />
     </div>
   );
 };
 
-export default PracticeTest;
+export default AttemptDetail;

@@ -1,6 +1,6 @@
 import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 type ChoiceProps = {
   questionTitle: string;
@@ -32,10 +32,10 @@ export default function Choice({
   );
 
   useEffect(() => {
-    if (doMode === "test" && savedAnswer !== undefined && selectedId === null) {
+    if (savedAnswer !== undefined && selectedId === null) {
       onSelect(savedAnswer);
     }
-  }, [savedAnswer, selectedId, onSelect, doMode]);
+  }, [savedAnswer, selectedId, onSelect]);
 
   const handleSelect = (id: number) => {
     if (doMode === "test" || !isChecked) {

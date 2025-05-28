@@ -133,13 +133,13 @@ const FeatureButtonWrapper: React.FC<{ position: string; icon: LucideIcon; featu
 
     switch (featureKey) {
       case "pencil":
-        path = `/practice-translate/${lessonId}`;
+        path = `/translate/${lessonId}`;
         break;
       case "headphones":
-        path = `/practice-listen/${lessonId}`;
+        path = `/listen/${lessonId}`;
         break;
       case "filetext":
-        path = "/test";
+        path = `/test/${lessonId}`;
         break;
       default:
         path = `/learn-phrase/${lessonId}`;

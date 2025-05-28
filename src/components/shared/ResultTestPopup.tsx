@@ -6,6 +6,7 @@ import point from "../../assets/point.png";
 type ResultTestPopupProps = {
   open: boolean;
   onClose: () => void;
+  viewDetail: () => void;
   score: number;
   status: "pass" | "fail";
   answer_count: number;
@@ -18,6 +19,7 @@ type ResultTestPopupProps = {
 export default function ResultTestPopup({
   open,
   onClose,
+  viewDetail,
   score,
   status,
   answer_count,
@@ -42,7 +44,7 @@ export default function ResultTestPopup({
         <div className="space-y-4 text-lg">
           <div className="flex justify-between items-center px-[20%] gap-2">
             <p>Đã làm: {answer_count}/{total_questions} câu</p>
-            <p>Thời gian: {duration} phút</p>
+            <p>Thời gian: {duration}</p>
           </div>
 
           <div className="flex justify-between px-[20%] gap-2 font-semibold">
@@ -62,13 +64,22 @@ export default function ResultTestPopup({
           </div>
         )}
 
-        <Button
-          variant="contained"
-          onClick={onClose}
-          className="!bg-cyan_border hover:!bg-secondary !text-white !font-bold !mt-8"
-        >
-          Đóng
-        </Button>
+        <div className="flex justify-center gap-8">
+          <Button
+            variant="contained"
+            onClick={onClose}
+            className="!bg-black hover:!bg-secondary !text-white !font-bold !mt-8"
+          >
+            Đóng
+          </Button>
+          <Button
+            variant="contained"
+            onClick={(viewDetail)}
+            className="!bg-cyan_border hover:!bg-secondary !text-white !font-bold !mt-8"
+          >
+            Xem chi tiết
+          </Button>
+        </div>    
       </DialogContent>
     </Dialog>
   );

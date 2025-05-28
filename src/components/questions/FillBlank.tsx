@@ -68,11 +68,11 @@ export default function FillBlank({
   };
 
   useEffect(() => {
-    if (doMode === "test" && savedAnswer && !answer) {
+    if (savedAnswer && !answer) {
       setAnswer(savedAnswer);
       onSelect(savedAnswer);
     }
-  }, [savedAnswer, doMode]);
+  }, [savedAnswer]);
   
   // Auto resize textarea, max 8 lines
   useEffect(() => {

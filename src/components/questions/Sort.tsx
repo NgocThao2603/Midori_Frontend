@@ -417,7 +417,7 @@ export default function Sort({
   );
 
   useEffect(() => {
-    if (doMode === "test" && savedAnswer?.length && selected.length === 0) {
+    if (savedAnswer?.length && selected.length === 0) {
       // Find tokens based on saved answer order
       const selectedTokens = savedAnswer.map(id => 
         tokens.find(t => t.id === id)
@@ -433,7 +433,7 @@ export default function Sort({
       // Notify parent
       onSelect(savedAnswer);
     }
-  }, [savedAnswer, doMode, tokens]);
+  }, [savedAnswer, tokens]);
 
   useEffect(() => {
     if (mode === "listen" && questionAudio?.audio_url) {

@@ -120,9 +120,9 @@ const LessonList = ({
 
   const modes = [
     { key: "phrase", path:"learn-phrase", label: "Học cụm từ", color: "bg-green-500 hover:bg-green-600" },
-    { key: "translate", path:"practice-translate", label: "Luyện dịch", color: "bg-blue-500 hover:bg-blue-600" },
-    { key: "listen", path:"practice-listen", label: "Luyện nghe", color: "bg-purple-500 hover:bg-purple-600" },
-    { key: "test", path:"practice-test", label: "Làm bài test", color: "bg-red-500 hover:bg-red-600" },
+    { key: "translate", path:"translate", label: "Luyện dịch", color: "bg-blue-500 hover:bg-blue-600" },
+    { key: "listen", path:"listen", label: "Luyện nghe", color: "bg-purple-500 hover:bg-purple-600" },
+    { key: "test", path:"test", label: "Làm bài test", color: "bg-red-500 hover:bg-red-600" },
   ];
   const pathSegment = location.pathname.split("/")[1];
   const currentModeObj = modes.find(mode => mode.path === pathSegment);
@@ -171,7 +171,10 @@ const LessonList = ({
                       key={mode.key}
                       onClick={() => {
                         if (currentMode !== mode.key) {
-                          navigate(`/${mode.path}/${currentLesson.id}`);
+                          navigate(`/${mode.path}/${currentLesson.id}`,
+                          {
+                            state: { fromLessonSection: true }
+                          });
                         }
                       }}
                       sx={{
