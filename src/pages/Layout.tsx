@@ -7,6 +7,7 @@ import { LessonScrollProvider } from "../contexts/LessonScrollContext";
 import { LessonStatusProvider } from "../contexts/LessonStatusContext";
 import { useState } from "react";
 import background from "../assets/background.png";
+import ProgressCircle from "../components/statistics/ProgressCircle";
 
 const getModeFromPath = (
   pathname: string
@@ -22,6 +23,7 @@ const getModeFromPath = (
 const Layout = () => {
   const location = useLocation();
   const isHome = location.pathname === "/home";
+  const isStatistic = location.pathname === "/statistic";
   const [level, setLevel] = useState<string>("N2");
   const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
 
@@ -47,7 +49,19 @@ const Layout = () => {
                     <Calendar />
                   </div>
                 )}
-                <LessonList level={level} onChapterToggle={(id) => setActiveChapterId(id)} displayMode={displayMode} activeMode={activeMode} />
+                {!isStatistic ? (
+                  <LessonList
+                    level={level}
+                    onChapterToggle={(id) => setActiveChapterId(id)}
+                    displayMode={displayMode}
+                    activeMode={activeMode}
+                  />
+                ) : (
+                  <div className="bg-cyan_pastel rounded-xl border border-cyan_border w-80 text-center">
+                    <div className="text-xl font-bold mt-4 text-cyan_text">Tiến độ</div>
+                    <ProgressCircle level={level} />
+                  </div>
+                )}
               </div>
             </div>
             {displayMode && (

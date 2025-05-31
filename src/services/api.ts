@@ -177,6 +177,14 @@ export interface TestAnswer {
   is_correct: boolean;
 }
 
+export interface UserDailyActivity {
+  id: number;
+  activity_date: string;
+  level: string;
+  is_studied: boolean;
+  point_earned: number;
+}
+
 // Đăng nhập user
 export const loginUser = async (credentials: { email: string; password: string }) => {
   try {
@@ -464,6 +472,43 @@ export const submitTestAttempt = async (testAttemptId: number) => {
     return response.data;
   } catch (error) {
     console.error("Error submitting test:", error);
+    throw error;
+  }
+};
+
+export const fetchActivitiesByLevel = async (level: string): Promise<UserDailyActivity[]> => {
+  try {
+    const response = await api.get("/user_daily_activities", {
+      params: { level },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch user daily activities for level:", level, error);
+    throw error;
+  }
+};
+
+export const markStudied = async (level: string) => {
+  try {
+    const response = await api.patch("/user_daily_activities/mark_studied", {
+      level 
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error marking studied:", error);
+    throw error;
+  }
+};
+
+export const updateDailyPoint = async (pointEarned: number, level: string) => {
+  try {
+    const response = await api.patch("/user_daily_activities/update_point", {
+      point_earned: pointEarned,
+      level
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating point:", error);
     throw error;
   }
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Tabs, Tab, Button } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
@@ -8,11 +8,14 @@ import PhraseCard from "../components/learn-phrase/PhraseCard";
 import { fetchVocabulariesByLesson, Vocabulary, Phrase } from "../services/api";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
+import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
 import doneTicker from "../assets/doneTicker.png"; 
 
 const LearnPhrase: React.FC = () => {
   const navigate = useNavigate();
   const { lessonId } = useParams();
+  const lessonIdNum = lessonId ? Number(lessonId) : undefined;
+  useMarkStudiedByLessonId(lessonIdNum);
   const { isDoneStatus } = useLessonStatuses();
   const done = lessonId ? isDoneStatus(Number(lessonId), "phrase") : false;
 
@@ -31,11 +34,17 @@ const LearnPhrase: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { vocabList, flashcards } = await fetchVocabulariesByLesson(lessonId);
+      if (!lessonId) return;
+      
+      try {
+        const { vocabList, flashcards } = await fetchVocabulariesByLesson(lessonId);
 
-      setVocabList(vocabList);
-      setFlashcards(flashcards);
-      setShuffledFlashcards([...flashcards]);
+        setVocabList(vocabList);
+        setFlashcards(flashcards);
+        setShuffledFlashcards([...flashcards]);
+      } catch (error) {
+        console.error("Lỗi khi fetch data:", error);
+      }
     };
 
     fetchData();

@@ -3,6 +3,7 @@ import close from "../../assets/close.png";
 import correctSound from "../../assets/sounds/true.mp3";
 import incorrectSound from "../../assets/sounds/false.mp3";
 import { useEffect } from "react";
+import { useAudio } from "../../contexts/AudioContext";
 
 type AnswerResultProps = {
   result: "correct" | "incorrect" | null;
@@ -12,13 +13,14 @@ type AnswerResultProps = {
 };
 
 export default function AnswerResult({ result, correctText, resultAudioUrl, meaning }: AnswerResultProps) {
+  const { playAudio } = useAudio();
+  
   if (!result) return null;
 
   const isCorrect = result === "correct";
 
   useEffect(() => {
     let checkAudio: HTMLAudioElement | null = null;
-    let resultAudio: HTMLAudioElement | null = null;
 
     if (result === "correct") {
       checkAudio = new Audio(correctSound);
@@ -32,9 +34,7 @@ export default function AnswerResult({ result, correctText, resultAudioUrl, mean
 
       checkAudio.onended = () => {
         if (resultAudioUrl) {
-          resultAudio = new Audio(resultAudioUrl);
-          resultAudio.volume = 1;
-          resultAudio.play();
+          playAudio(resultAudioUrl);
         }
       };
     }
@@ -42,10 +42,8 @@ export default function AnswerResult({ result, correctText, resultAudioUrl, mean
     return () => {
       checkAudio?.pause();
       checkAudio = null;
-      resultAudio?.pause();
-      resultAudio = null;
     };
-  }, [result, resultAudioUrl]);
+  }, [result, resultAudioUrl, playAudio]); 
 
   return (
     <div className={`text-center mt-10 ${isCorrect ? "text-secondary" : "text-red_text"}`}>

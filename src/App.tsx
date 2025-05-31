@@ -4,6 +4,9 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { AudioProvider } from "./contexts/AudioContext";
+import { LessonLevelProvider } from "./contexts/LessonLevelContext";
+import { UserActivityProvider } from "./contexts/UserActivityContext";
 
 const theme = createTheme({
   components: {
@@ -26,8 +29,14 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes/>
-          <ToastContainer />
+          <LessonLevelProvider>
+            <UserActivityProvider>
+              <AudioProvider>
+                <AppRoutes/>
+                <ToastContainer />
+              </AudioProvider>
+            </UserActivityProvider>
+          </LessonLevelProvider>
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>

@@ -14,6 +14,7 @@ import Match from "../questions/Match";
 import Sort from "../questions/Sort";
 import FillBlank from "../questions/FillBlank";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
+import { useMarkStudiedByLessonId } from "../../hooks/useMarkStudiedByLessonId";
 
 type TestTemplateProps = {
   questions: Question[];
@@ -43,6 +44,7 @@ export default function TestTemplate({
   const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: any }>({});
   const [isLoadingSavedAnswers, setIsLoadingSavedAnswers] = useState(true);
   const [showResult, setShowResult] = useState(true);
+  useMarkStudiedByLessonId(lessonId);
 
   const {
     userAnswers,
@@ -91,7 +93,6 @@ export default function TestTemplate({
       try {
         setIsLoadingSavedAnswers(true);
         const savedData = await getTestAnswersByTestAttempt(attemptId);
-        console.log("Data:", savedData)
         
         const answersMap: { [key: number]: any } = {};
         const questionIds: number[] = [];
@@ -122,8 +123,6 @@ export default function TestTemplate({
 
             answersMap[item.question_id] = formattedAnswer;
             questionIds.push(item.question_id);
-            
-            console.log("Formatted answer for question", item.question_id, ":", formattedAnswer);
           } catch (err) {
             console.error("Error formatting answer for question", item.question_id, err);
           }
