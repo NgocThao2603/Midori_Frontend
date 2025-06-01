@@ -3,6 +3,8 @@ import { useOutletContext } from "react-router-dom";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
 import { fetchChapters } from "../services/api";
 import { Book, Pencil, Headphones, FileText } from "lucide-react";
+import ActivityChart from "../components/statistics/ActivityChart";
+import { Tag } from 'antd';
 
 const modes = [
   { key: "phrase", label: "Học cụm từ", icon: Book, bg_color: "bg-[#fcffe6]", bd_color: "border-[#ffe58f]" },
@@ -54,31 +56,42 @@ const Statistic: React.FC = () => {
     return "bg-green-500";  
   };
 
+  const [totalPoint, setTotalPoint] = useState(0);
   return (
-    <div className="w-full max-w-4xl mx-auto mt-2 p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-      {modes.map(({ key, label, icon: Icon, bg_color, bd_color }) => {
-        const { done, total, percent } = getProgress(key);
-        const progressColor = getProgressColor(percent);
-        return (
-          <div
-            key={key}
-            className={`${bg_color} border ${bd_color} rounded-xl p-6 flex flex-col gap-2`}
-          >
-            <div className="flex text-lg text-cyan_text font-bold">
-              <Icon className="w-8 h-8 mr-2" />
-              {label}
+    <div className="w-full max-w-4xl mx-auto p-4">
+      <h2 className="text-secondary text-2xl uppercase font-bold mb-6">Tiến độ học</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {modes.map(({ key, label, icon: Icon, bg_color, bd_color }) => {
+          const { done, total, percent } = getProgress(key);
+          const progressColor = getProgressColor(percent);
+          return (
+            <div
+              key={key}
+              className={`${bg_color} border ${bd_color} rounded-xl p-6 flex flex-col gap-2`}
+            >
+              <div className="flex text-lg text-cyan_text font-bold">
+                <Icon className="w-8 h-8 mr-2" />
+                {label}
+              </div>
+              <div className="text-gray-600 mt-2"><strong>{`${done}/${total}`}</strong>  bài đã hoàn thành</div>
+              <div className="w-full bg-white border rounded-full h-3 mt-2">
+                <div
+                  className={`${progressColor} h-3 rounded-full`}
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+              <div className="text-right text-lg text-cyan_text font-semibold">{percent}%</div>
             </div>
-            <div className="text-gray-600 mt-2"><strong>{`${done}/${total}`}</strong>  bài đã hoàn thành</div>
-            <div className="w-full bg-white border rounded-full h-3 mt-2">
-              <div
-                className={`${progressColor} h-3 rounded-full`}
-                style={{ width: `${percent}%` }}
-              />
-            </div>
-            <div className="text-right text-lg text-cyan_text font-semibold">{percent}%</div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      <div className="w-full mt-12">
+        <div className="flex items-center gap-6">
+          <h2 className="text-secondary text-2xl uppercase font-bold">Điểm tích lũy</h2>
+          <Tag color="green" className="text-xl font-bold px-4 py-1">{totalPoint}</Tag>
+        </div>
+        <ActivityChart level={level} onTotalChange={setTotalPoint}/>
+      </div>
     </div>
   );
 };

@@ -26,6 +26,7 @@ const Layout = () => {
   const isStatistic = location.pathname === "/statistic";
   const [level, setLevel] = useState<string>("N2");
   const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
+  const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
 
   const state = location.state as { fromLessonSection?: boolean } | null;
   const displayMode = state?.fromLessonSection ? getModeFromPath(location.pathname) : null;
@@ -43,10 +44,14 @@ const Layout = () => {
             </div>
             <main className="col-span-6 p-6 mt-12 z-10"><Outlet context={{ activeChapterId, level }}/></main>
             <div className="col-span-2 mt-20 mr-10 p-4">
-              <div className="fixed">
+              <div className="fixed flex flex-col">
                 {isHome && (
                   <div className="mb-6">
-                    <Calendar />
+                    <Calendar
+                      level={level}
+                      isExpanded={calendarExpanded}
+                      setIsExpanded={setCalendarExpanded}
+                    />
                   </div>
                 )}
                 {!isStatistic ? (
@@ -55,16 +60,17 @@ const Layout = () => {
                     onChapterToggle={(id) => setActiveChapterId(id)}
                     displayMode={displayMode}
                     activeMode={activeMode}
+                    calendarExpanded={calendarExpanded}
                   />
                 ) : (
-                  <div className="bg-cyan_pastel rounded-xl border border-cyan_border w-80 text-center">
+                  <div className="bg-cyan_pastel rounded-xl border border-cyan_border w-80 text-center mt-12">
                     <div className="text-xl font-bold mt-4 text-cyan_text">Tiến độ</div>
                     <ProgressCircle level={level} />
                   </div>
                 )}
               </div>
             </div>
-            {displayMode && (
+            {(displayMode || isStatistic) && (
               <div
                 className="fixed bottom-[-8vh] right-0 w-[20vw] h-[36vh] bg-repeat-x bg-bottom opacity-100 z-0 pointer-events-none"
                 style={{

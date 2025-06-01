@@ -23,12 +23,14 @@ const LessonList = ({
   level,
   onChapterToggle,
   displayMode,
-  activeMode
+  activeMode,
+  calendarExpanded
 }: {
   level: string;
   onChapterToggle: (chapterId: number) => void;
   displayMode?: "phrase" | "translate" | "listen" | "test" | null; // displayMode: Click tu FeatureButton
   activeMode?: "phrase" | "translate" | "listen" | "test" | null; // activeMode: xac dinh mode cho url hien tai
+  calendarExpanded: boolean;
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -136,7 +138,7 @@ const LessonList = ({
     if (!currentChapter || !currentLesson) return null;
 
     return (
-      <div className="bg-green_pastel rounded-xl p-4 border w-80">
+      <div className="bg-green_pastel rounded-xl p-4 border w-80 mt-6">
         <p className="text-lg font-bold text-center text-secondary mb-4">Bài học hiện tại</p>
         <div className="bg-white rounded-xl max-h-[75vh] overflow-y-auto scrollbar-hide">
           <List sx={{ padding: 0 }}>
@@ -218,7 +220,13 @@ const LessonList = ({
   return (
     <div className="bg-green_pastel rounded-xl p-4 border w-80">
       <p className="text-lg font-bold text-center text-secondary mb-4">Danh sách bài</p>
-      <div className={`bg-white rounded-xl overflow-y-auto scrollbar-hide ${isHome ? "max-h-[35vh]" : "max-h-[75vh]"}`}>
+      <div className={`bg-white rounded-xl overflow-y-auto scrollbar-hide ${
+        isHome 
+          ? calendarExpanded 
+            ? "max-h-[35vh]" 
+            : "max-h-[55vh]"
+          : "max-h-[75vh]"
+      }`}>
         <List sx={{ padding: 0 }}>
           {chapters.map((chapter) => (
             <div key={chapter.id}>
