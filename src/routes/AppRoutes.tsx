@@ -16,6 +16,7 @@ import PracticeListen from "../pages/PracticeListen";
 import PracticeTest from "../pages/PracticeTest";
 import AttemptDetail from "../pages/AttemptDetail";
 import Statistic from "../pages/Statistic";
+import Ranking from "../pages/Ranking";
 
 const  AppRoutes = () => {
   return (
@@ -36,6 +37,7 @@ const  AppRoutes = () => {
           <Route path="/translate/:lessonId" element={<Translate/>}></Route>
           <Route path="/listen/:lessonId" element={<Listen/>}></Route>
           <Route path="/test/:lessonId" element={<Test/>}></Route>
+          <Route path="/ranking" element={<Ranking/>}></Route>
           <Route path="/statistic" element={<Statistic/>}></Route>
         </Route>
         <Route path="/practice-phrase/:lessonId" element={<ProtectedRoute><PracticePhrase/></ProtectedRoute>} />

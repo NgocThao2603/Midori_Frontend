@@ -24,6 +24,7 @@ const Layout = () => {
   const location = useLocation();
   const isHome = location.pathname === "/home";
   const isStatistic = location.pathname === "/statistic";
+  const isRanking = location.pathname === "/ranking";
   const [level, setLevel] = useState<string>("N2");
   const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
   const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
@@ -44,7 +45,7 @@ const Layout = () => {
             </div>
             <main className="col-span-6 p-6 mt-12 z-10"><Outlet context={{ activeChapterId, level }}/></main>
             <div className="col-span-2 mt-20 mr-10 p-4">
-              <div className="fixed flex flex-col">
+              <div className="fixed">
                 {isHome && (
                   <div className="mb-6">
                     <Calendar
@@ -54,7 +55,7 @@ const Layout = () => {
                     />
                   </div>
                 )}
-                {!isStatistic ? (
+                {!isStatistic && !isRanking ? (
                   <LessonList
                     level={level}
                     onChapterToggle={(id) => setActiveChapterId(id)}
@@ -62,12 +63,14 @@ const Layout = () => {
                     activeMode={activeMode}
                     calendarExpanded={calendarExpanded}
                   />
-                ) : (
-                  <div className="bg-cyan_pastel rounded-xl border border-cyan_border w-80 text-center mt-12">
-                    <div className="text-xl font-bold mt-4 text-cyan_text">Tiến độ</div>
-                    <ProgressCircle level={level} />
-                  </div>
-                )}
+                ) : 
+                  (!isRanking ? (
+                    <div className="bg-cyan_pastel rounded-xl border border-cyan_border w-80 text-center mt-12">
+                      <div className="text-xl font-bold mt-4 text-cyan_text">Tiến độ</div>
+                      <ProgressCircle level={level} />
+                    </div>
+                  ) : "")
+                }
               </div>
             </div>
             {(displayMode || isStatistic) && (

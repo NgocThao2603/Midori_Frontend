@@ -512,3 +512,27 @@ export const updateDailyPoint = async (pointEarned: number, level: string) => {
     throw error;
   }
 };
+
+// Lấy bảng xếp hạng tổng thể
+export const getOverallRanking = async () => {
+  try {
+    const response = await api.get("/rankings/overall");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching overall ranking:", error);
+    throw error;
+  }
+};
+
+// Lấy bảng xếp hạng theo level và thời gian
+export const getLevelRanking = async (level: string, period: "day" | "week" | "month") => {
+  try {
+    const response = await api.get("/rankings/level", {
+      params: { level, period }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching level ranking:", error);
+    throw error;
+  }
+};

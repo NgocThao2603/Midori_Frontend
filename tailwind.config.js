@@ -14,7 +14,10 @@ export default {
         cyan_pastel: "#F2FDFD",
         cyan_text: "#0F8480",
         red_text: "#EA2B2B",
-        red_pastel: "#FFDFE0"
+        red_pastel: "#FFDFE0",
+        gold: "#FFD700",
+        silver: "#C0C0C0",
+        bronze: "#CD7F32",
       },
     },
   },

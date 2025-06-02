@@ -7,7 +7,7 @@ import {
 } from "react";
 import { fetchActivitiesByLevel, UserDailyActivity } from "../services/api";
 
-type ActivityMap = Map<string, UserDailyActivity>; // key: `${level}_${date}`
+type ActivityMap = Map<string, UserDailyActivity>;
 
 interface UserActivityContextType {
   getActivity: (level: string, date: string) => UserDailyActivity | undefined;
