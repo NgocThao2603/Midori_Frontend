@@ -4,6 +4,7 @@ import { AudioFile } from "../../services/api";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 type FillBlankProps = {
+  questionId?: number;
   questionTitle: string;
   savedAnswer?: string;
   onSelect: (answer: string) => void;
@@ -17,6 +18,7 @@ type FillBlankProps = {
 };
 
 export default function FillBlank({
+  questionId,
   questionTitle,
   savedAnswer,
   onSelect,
@@ -94,13 +96,13 @@ export default function FillBlank({
     };
   }, []);
 
-  useEffect(() => {
-    if (mode === "listen") {
-      if (questionAudio) {
-        playAudio(questionAudio.audio_url);
-      }
-    }
-  }, [ audioFiles]);
+  // useEffect(() => {
+  //   if (mode === "listen") {
+  //     if (questionAudio) {
+  //       playAudio(questionAudio.audio_url);
+  //     }
+  //   }
+  // }, [ audioFiles]);
 
   return (
     <div className="w-full max-w-3xl mx-auto text-center mt-6">
