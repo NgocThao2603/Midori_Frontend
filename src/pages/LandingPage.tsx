@@ -2,18 +2,22 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FeatureButton from "../components/home/FeatureButton";
 import { Book, Pencil, Headphones, FileText } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation } from "swiper/modules";
-import "swiper/swiper-bundle.css";
 import flashcard from "../assets/flashcard.png";
-import practice from "../assets/practice.png";
-import test from "../assets/test.png";
+import ex_choice from "../assets/ex_choice.png";
+import ex_match from "../assets/ex_match.png";
+import ex_translate from "../assets/ex_translate.png";
+import ex_blank from "../assets/ex_blank.png";
+import ex_listen from "../assets/ex_listen.png";
+import ex_listen_fill from "../assets/ex_listen_fill.png";
+import land_test from "../assets/land_test.png";
+import dotest from "../assets/dotest.png";
 import Header from "../components/Header";
+import { Slide } from "../components/Slide";
 
-const images1 = [flashcard, practice, test];
-const images2 = [flashcard, practice];
-const images3 = [flashcard, practice, test];
-const images4 = [flashcard];
+const images1 = [flashcard, ex_choice, ex_match];
+const images2 = [ex_translate, ex_blank];
+const images3 = [ex_listen, ex_listen_fill];
+const images4 = [land_test, dotest];
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,8 +71,9 @@ const LandingPage: React.FC = () => {
             <div className="flex gap-5 items-center">
               <FeatureButton
                 icon={Book}
-                isDone={true}
-              />              
+                isDone={true} onClick={function (): void {
+                  throw new Error("Function not implemented.");
+                } }              />              
               <h3 className="text-secondary font-bold text-2xl">Học cụm từ</h3>
             </div>
             <div className="text-cyan_text ml-36 space-y-3">
@@ -80,60 +85,15 @@ const LandingPage: React.FC = () => {
           </div>
           {/* Image Placeholder */}
           <div className="w-full md:w-1/2 h-[400px]">
-            <Swiper
-              modules={[Autoplay, Navigation]}
-              autoplay={{ delay: 3000, disableOnInteraction: false }}
-              loop={true}
-              navigation
-              className="rounded-xl shadow-lg h-full [&_.swiper-button-next]:text-green_pastel [&_.swiper-button-prev]:text-green_pastel"
-            >
-              {images1.map((image, index) => (
-                <SwiperSlide key={index} onClick={(e) => e.stopPropagation()}>
-                  <img
-                    src={image}
-                    alt={`Slide ${index + 1}`}
-                    className="rounded-xl shadow-lg w-full h-full object-cover cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const swiperContainer = e.currentTarget.closest(".swiper"); 
-                      const nextButton = swiperContainer?.querySelector(".swiper-button-next") as HTMLElement;
-                      nextButton?.click(); 
-                    }}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            <Slide images={images1} />
           </div>
         </section>
 
         {/* Section Luyện dịch câu */}
         <section className="mt-12 flex gap-6">
           {/* Image Placeholder */}
-          <div className="w-full md:w-1/2 h-[400px] relative">
-            <div className="absolute w-20 h-20 bg-green_pastel rounded-full top-36 -left-12"></div>
-            <Swiper
-              modules={[Autoplay, Navigation]}
-              autoplay={{ delay: 3000, disableOnInteraction: false }}
-              loop={true}
-              navigation
-              className="rounded-xl shadow-lg h-full [&_.swiper-button-next]:text-green_pastel [&_.swiper-button-prev]:text-green_pastel"
-            >
-              {images2.map((image, index) => (
-                <SwiperSlide key={index} onClick={(e) => e.stopPropagation()}>
-                  <img
-                    src={image}
-                    alt={`Slide ${index + 1}`}
-                    className="rounded-xl shadow-lg w-full h-full object-cover cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const swiperContainer = e.currentTarget.closest(".swiper"); 
-                      const nextButton = swiperContainer?.querySelector(".swiper-button-next") as HTMLElement;
-                      nextButton?.click(); 
-                    }}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+          <div className="w-full md:w-1/2 h-[400px]">
+            <Slide images={images2} />
           </div>
           {/* Feature Button + Text */}
           <div className="w-full md:w-1/2">
@@ -141,8 +101,9 @@ const LandingPage: React.FC = () => {
               <h3 className="text-secondary font-bold text-2xl">Luyện dịch câu</h3>
               <FeatureButton
                 icon={Pencil}
-                isDone={true}
-              />  
+                isDone={true} onClick={function (): void {
+                  throw new Error("Function not implemented.");
+                } }              />  
             </div>
             <div className="text-cyan_text ml-20 mr-36 space-y-3">
               <p>Cải thiện khả năng luyện dịch ngược từ tiếng Việt → tiếng Nhật.</p>
@@ -158,74 +119,27 @@ const LandingPage: React.FC = () => {
             <div className="flex gap-5 items-center">
               <FeatureButton
                 icon={Headphones}
-                isDone={true}
-              />              
+                isDone={true} onClick={function (): void {
+                  throw new Error("Function not implemented.");
+                } }              />              
               <h3 className="text-secondary font-bold text-2xl">Luyện nghe</h3>
             </div>
             <div className="text-cyan_text ml-36 space-y-3">
-              <p className="font-semibold">Flashcard</p>
-              <p>Học từ vựng và cụm từ đi kèm theo từng bài nhỏ.</p>
-              <p className="font-semibold mt-2">Luyện tập</p>
-              <p>Thử thách trí nhớ và khả năng ghép cụm của bạn!</p>
+              <p>Kết hợp đa giác quan để ghi nhớ sâu từ vựng và cách dùng từ trong câu.</p>
+              <p>Cải thiện khả năng nghe hiểu và phản xạ nhanh khi giao tiếp thực tế.</p>
             </div>
           </div>
           {/* Image Placeholder */}
           <div className="w-full md:w-1/2 h-[400px]">
-            <Swiper
-              modules={[Autoplay, Navigation]}
-              autoplay={{ delay: 3000, disableOnInteraction: false }}
-              loop={true}
-              navigation
-              className="rounded-xl shadow-lg h-full [&_.swiper-button-next]:text-green_pastel [&_.swiper-button-prev]:text-green_pastel"
-            >
-              {images3.map((image, index) => (
-                <SwiperSlide key={index} onClick={(e) => e.stopPropagation()}>
-                  <img
-                    src={image}
-                    alt={`Slide ${index + 1}`}
-                    className="rounded-xl shadow-lg w-full h-full object-cover cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const swiperContainer = e.currentTarget.closest(".swiper"); 
-                      const nextButton = swiperContainer?.querySelector(".swiper-button-next") as HTMLElement;
-                      nextButton?.click(); 
-                    }}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            <Slide images={images3} />
           </div>
         </section>
 
         {/* Section Làm bài test */}
         <section className="mt-12 flex gap-6">
           {/* Image Placeholder */}
-          <div className="w-full md:w-1/2 h-[400px] relative">
-            <div className="absolute w-10 h-10 bg-green_pastel rounded-full bottom-0 -right-20"></div>
-            <div className="absolute w-6 h-6 bg-green_pastel rounded-full -bottom-8 -right-28"></div>
-            <Swiper
-              modules={[Autoplay, Navigation]}
-              autoplay={{ delay: 3000, disableOnInteraction: false }}
-              loop={true}
-              navigation
-              className="rounded-xl shadow-lg h-full [&_.swiper-button-next]:text-green_pastel [&_.swiper-button-prev]:text-green_pastel"
-            >
-              {images4.map((image, index) => (
-                <SwiperSlide key={index} onClick={(e) => e.stopPropagation()}>
-                  <img
-                    src={image}
-                    alt={`Slide ${index + 1}`}
-                    className="rounded-xl shadow-lg w-full h-full object-cover cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const swiperContainer = e.currentTarget.closest(".swiper"); 
-                      const nextButton = swiperContainer?.querySelector(".swiper-button-next") as HTMLElement;
-                      nextButton?.click(); 
-                    }}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+          <div className="w-full md:w-1/2 h-[400px]">
+            <Slide images={images4} />
           </div>
           {/* Feature Button + Text */}
           <div className="w-full md:w-1/2">
@@ -233,12 +147,13 @@ const LandingPage: React.FC = () => {
               <h3 className="text-secondary font-bold text-2xl">Làm bài test</h3>
               <FeatureButton
                 icon={FileText}
-                isDone={true}
-              />  
+                isDone={true} onClick={function (): void {
+                  throw new Error("Function not implemented.");
+                } }              />  
             </div>
             <div className="text-cyan_text ml-20 mr-36 space-y-3">
-              <p>Cải thiện khả năng luyện dịch ngược từ tiếng Việt → tiếng Nhật.</p>
-              <p>Giúp bạn hiểu cấu trúc thành phần câu và cách sử dụng cụm từ đã học.</p>
+              <p>Kiểm tra kiến thức bạn ghi nhớ với cơ hội tích điểm x2.</p>
+              <p>Làm test để hoàn thành trọn vẹn bài học nhé!</p>
             </div>
           </div>
         </section>

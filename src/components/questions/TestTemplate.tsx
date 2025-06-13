@@ -114,7 +114,6 @@ export default function TestTemplate({
       try {
         setIsLoadingSavedAnswers(true);
         const savedData = await getTestAnswersByTestAttempt(attemptId);
-        console.log("Data:", savedData)
         
         const answersMap: { [key: number]: any } = {};
         const questionIds: number[] = [];
@@ -145,8 +144,6 @@ export default function TestTemplate({
 
             answersMap[item.question_id] = formattedAnswer;
             questionIds.push(item.question_id);
-            
-            console.log("Formatted answer for question", item.question_id, ":", formattedAnswer);
           } catch (err) {
             console.error("Error formatting answer for question", item.question_id, err);
           }
@@ -242,7 +239,6 @@ export default function TestTemplate({
     if (!question) return;
 
     const answer = userAnswers[questionId];
-    console.log("User answer:", answer);
     checkAnswer(questionId);
     setWaitingToSaveId(questionId); // đánh dấu sẽ lưu sau khi result có
   };
@@ -285,8 +281,6 @@ export default function TestTemplate({
         answer: answer as string | number | number[],
         is_correct: isCorrect
       };
-
-      console.log("Saved answer:", testAnswer);
 
       // Update savedAnswers với đáp án mới nhất
       setSavedAnswers(prev => ({

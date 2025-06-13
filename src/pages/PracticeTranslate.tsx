@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { fetchQuestionsByLesson, Question } from "../services/api";
 import { useParams } from "react-router-dom";
 import Template from "../components/questions/Template";
+import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
 
 const PracticeTranslate = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const lessonIdNumber = Number(lessonId);
+  useMarkStudiedByLessonId(lessonIdNumber);
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);

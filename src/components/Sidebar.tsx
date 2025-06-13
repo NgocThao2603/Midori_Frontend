@@ -29,7 +29,7 @@ const Sidebar = () => {
     { name: "Luyện nghe", path: `/listen/${lessonId}`, icon: headphones },
     { name: "Làm bài test", path: `/test/${lessonId}`, icon: test },
     { name: "Xếp hạng", path: "/ranking", icon: leaderboard },
-    { name: "Kết quả", path: "/result", icon: result },
+    { name: "Thống kê", path: "/statistic", icon: result },
   ];
 
   useEffect(() => {

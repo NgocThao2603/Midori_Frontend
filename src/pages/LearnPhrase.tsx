@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Tabs, Tab, Button } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
@@ -8,14 +8,21 @@ import PhraseCard from "../components/learn-phrase/PhraseCard";
 import { fetchVocabulariesByLesson, Vocabulary, Phrase } from "../services/api";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
+import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
 import doneTicker from "../assets/doneTicker.png"; 
+import { Slide } from "../components/Slide";
+import ex_choice from "../assets/ex_choice.png";
+import ex_match from "../assets/ex_match.png";
 
 const LearnPhrase: React.FC = () => {
   const navigate = useNavigate();
   const { lessonId } = useParams();
+  const lessonIdNum = lessonId ? Number(lessonId) : undefined;
+  useMarkStudiedByLessonId(lessonIdNum);
   const { isDoneStatus } = useLessonStatuses();
   const done = lessonId ? isDoneStatus(Number(lessonId), "phrase") : false;
 
+  const images = [ex_choice, ex_match]
   const [tabIndex, setTabIndex] = useState(0);
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,11 +38,17 @@ const LearnPhrase: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { vocabList, flashcards } = await fetchVocabulariesByLesson(lessonId);
+      if (!lessonId) return;
+      
+      try {
+        const { vocabList, flashcards } = await fetchVocabulariesByLesson(lessonId);
 
-      setVocabList(vocabList);
-      setFlashcards(flashcards);
-      setShuffledFlashcards([...flashcards]);
+        setVocabList(vocabList);
+        setFlashcards(flashcards);
+        setShuffledFlashcards([...flashcards]);
+      } catch (error) {
+        console.error("Lỗi khi fetch data:", error);
+      }
     };
 
     fetchData();
@@ -244,13 +257,17 @@ const LearnPhrase: React.FC = () => {
               <p className="font-semibold text-xl">
                 Cùng Midori luyện tập với các câu hỏi đa dạng
               </p>
-              <ul className="list-disc list-inside ml-2 mt-4 space-y-2">
+              <ul className="flex w-3/4 mx-auto list-disc list-inside mt-4 items-center justify-between">
                 <li>Thi nối từ</li>
                 <li>Đoán nghĩa đúng</li>
-                <li>Cách đọc sao ta?</li>
+                <li>Cách đọc như nào?</li>
               </ul>
-              <p className="mt-4 font-semibold text-xl">Thử thách trí nhớ của bạn!</p>
+              <div className="w-3/4 h-76 mt-6 items-center mx-auto">
+                <Slide images={images} variant="plain"/>
+              </div>
+              <p className="mt-4 font-semibold text-xl text-center">Thử thách trí nhớ của bạn!</p>
             </div> 
+            
           </div>
     
           <Button

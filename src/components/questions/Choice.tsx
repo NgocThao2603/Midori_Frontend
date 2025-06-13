@@ -1,8 +1,10 @@
 import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
 import { useEffect } from "react";
+import { useQuestionAudio } from "../../hooks/useQuestionAudio";
 
 type ChoiceProps = {
+  questionId?: number;
   questionTitle: string;
   choices: { id: number; choice: string, is_correct?: boolean }[];
   onSelect: (id: number) => void;
@@ -16,6 +18,7 @@ type ChoiceProps = {
 };
 
 export default function Choice({
+  questionId,
   questionTitle, 
   choices, 
   savedAnswer,
@@ -27,9 +30,11 @@ export default function Choice({
   meaning,
   doMode
 }: ChoiceProps) {
-  const questionAudio = audioFiles.find(
-    (file) => file.audio_type === "example" || file.audio_type === "vocab" || file.audio_type === "phrase"
-  );
+  const { questionAudio } = useQuestionAudio({
+    audioFiles,
+    questionId,
+    autoPlay: false
+  });
 
   useEffect(() => {
     if (savedAnswer !== undefined && selectedId === null) {

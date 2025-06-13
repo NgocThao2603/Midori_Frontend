@@ -4,6 +4,7 @@ import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
 
 type MatchProps = {
+  questionId?: number;
   questionTitle: string;
   choices: { id: number; choice: string; is_correct?: boolean }[];
   onSelect: (answer: number[]) => void;
@@ -17,6 +18,7 @@ type MatchProps = {
 };
 
 export default function Match({
+  questionId,
   questionTitle,
   choices,
   savedAnswer,

@@ -8,7 +8,7 @@ import { getTests, TestInfo, fetchTestAttemptsByTestId, TestAttempt, createTestA
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { Select, MenuItem, FormControl, TablePagination } from "@mui/material";
-import { StatusBadge } from "../components/StatusBadge";
+import { StatusBadge } from "../components/test_attempts/StatusBadge";
 import { formatDuration } from "../services/timeService";
 
 const Test: React.FC = () => {
