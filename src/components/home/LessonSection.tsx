@@ -44,10 +44,10 @@ const LessonSection = React.forwardRef<HTMLDivElement, LessonSectionProps>(
           path = `/learn-phrase/${lessonId}`;
           break;
         case 1:
-          path = `/practice-translate/${lessonId}`;
+          path = `/translate/${lessonId}`;
           break;
         case 2:
-          path = `/practice-listen/${lessonId}`;
+          path = `/listen/${lessonId}`;
           break;
         case 3:
           path = `/test/${lessonId}`;
