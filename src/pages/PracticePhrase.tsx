@@ -19,15 +19,12 @@ const PracticePhrase = () => {
       try {
         setLoading(true);
         const [questionsData, meaningsData] = await Promise.all([
-          fetchQuestionsByLesson(lessonIdNumber),
+          fetchQuestionsByLesson(lessonIdNumber, "phrase"),  // Thêm param practice_type
           fetchLessonMeaningsByLesson(lessonIdNumber)
         ]);
         
-        const filtered = questionsData.filter((q) =>
-          q.question_type === "choice" || q.question_type === "matching"
-        );
-        setQuestions(filtered);
-        setLessonMeanings(meaningsData || []); // Ensure it's an array
+        setQuestions(questionsData);
+        setLessonMeanings(meaningsData || []);
       } catch (error) {
         console.error("Error loading questions or meanings:", error);
         setQuestions([]);

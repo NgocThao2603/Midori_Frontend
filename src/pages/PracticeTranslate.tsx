@@ -16,13 +16,16 @@ const PracticeTranslate = () => {
     if (!lessonIdNumber) return;
 
     const loadQuestions = async () => {
-      setLoading(true);
-      const data = await fetchQuestionsByLesson(lessonIdNumber);
-      const filtered = data.filter((q) =>
-        q.question_type === "sorting" || q.question_type === "fill_blank"
-      );
-      setQuestions(filtered);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const questionsData = await fetchQuestionsByLesson(lessonIdNumber, "example");
+        setQuestions(questionsData);
+      } catch (error) {
+        console.error("Error loading questions:", error);
+        setQuestions([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadQuestions();

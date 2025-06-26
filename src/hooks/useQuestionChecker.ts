@@ -76,18 +76,52 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
       isCorrect = normalizedCorrect === normalizedUser;
     }
 
+    // else if (question.question_type === "sorting") {
+    //   const userOrder = Array.isArray(userAnswer) ? userAnswer : [];
+    
+    //   // Lấy danh sách ID theo thứ tự đúng từ token_index
+    //   const correctOrder = (question.example_tokens || [])
+    //     .filter(t => typeof t.token_index === "number")
+    //     .sort((a, b) => (a.token_index! - b.token_index!))
+    //     .map(t => t.id);
+    
+    //   isCorrect =
+    //     correctOrder.length === userOrder.length &&
+    //     correctOrder.every((id, index) => id === userOrder[index]);
+    // }
     else if (question.question_type === "sorting") {
       const userOrder = Array.isArray(userAnswer) ? userAnswer : [];
-    
-      // Lấy danh sách ID theo thứ tự đúng từ token_index
-      const correctOrder = (question.example_tokens || [])
+
+      const allowedDuplicateSurfaces = ["の", "が", "に", "を", "は", "と", "も", "で", "から", "まで"];
+
+      const correctTokens = (question.example_tokens || [])
         .filter(t => typeof t.token_index === "number")
-        .sort((a, b) => (a.token_index! - b.token_index!))
-        .map(t => t.id);
-    
-      isCorrect =
-        correctOrder.length === userOrder.length &&
-        correctOrder.every((id, index) => id === userOrder[index]);
+        .sort((a, b) => a.token_index! - b.token_index!);
+
+      // Lấy token theo id để so sánh
+      const tokenMap = new Map(correctTokens.map(t => [t.id, t]));
+
+      // Check chiều dài
+      if (correctTokens.length !== userOrder.length) {
+        isCorrect = false;
+      } else {
+        // So sánh từng phần tử theo index
+        isCorrect = correctTokens.every((correctToken, index) => {
+          const userTokenId = userOrder[index];
+          if (typeof userTokenId !== "number") return false;
+          const userToken = tokenMap.get(userTokenId);
+
+          if (!userToken) return false;
+
+          // Nếu là trợ từ có thể trùng, chỉ cần đúng surface
+          if (allowedDuplicateSurfaces.includes(correctToken.jp_token)) {
+            return correctToken.jp_token === userToken.jp_token;
+          }
+
+          // Ngược lại phải đúng ID
+          return correctToken.id === userTokenId;
+        });
+      }
     }
 
     setResults((prev) => ({

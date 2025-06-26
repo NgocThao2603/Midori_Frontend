@@ -6,7 +6,6 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { useAudio } from "../../contexts/AudioContext";
 
 type SortProps = {
-  questionId?: number;
   questionTitle: string;
   tokens: ExampleToken[];
   onSelect: (answer: number[]) => void;
@@ -15,6 +14,7 @@ type SortProps = {
   checkResult?: "correct" | "incorrect" | null;
   isChecked?: boolean;
   audioFiles: AudioFile[];
+  exampleId?: number;
   mode: "translate" | "listen";
   currentQuestionId: number;
   meaning?: string;
@@ -22,7 +22,6 @@ type SortProps = {
 };
 
 export default function Sort({
-  questionId,
   questionTitle,
   tokens = [],
   selectedIds = [],
@@ -31,111 +30,55 @@ export default function Sort({
   checkResult,
   isChecked,
   audioFiles,
+  exampleId,
   mode,
   currentQuestionId,
   meaning,
-  doMode
+  doMode,
 }: SortProps) {
+  const { playAudio } = useAudio();
   const [selected, setSelected] = useState<ExampleToken[]>([]);
-  const [available, setAvailable] = useState<ExampleToken[]>([]);
-  const { playAudio, isPlaying } = useAudio();
+  const [shuffledTokens, setShuffledTokens] = useState<ExampleToken[]>([]);
 
   const questionAudio = audioFiles.find(
-    (file) => 
-      file.audio_type === "example" && 
-      file.example_id === tokens[0]?.example_id
+    (file) => file.audio_type === "example" && file.example_id === exampleId
   );
 
+  const shuffleArray = (array: ExampleToken[]) => {
+    return [...array]
+      .map((item) => ({ item, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ item }) => item);
+  };
+
+  const available = shuffledTokens.filter((t) => !selected.find((s) => s.id === t.id));
+
+  // Shuffle once when question changes
+  useEffect(() => {
+    setShuffledTokens(shuffleArray(tokens));
+    setSelected([]);
+  }, [currentQuestionId]);
+
+  // Select from savedAnswer
   useEffect(() => {
     if (savedAnswer?.length && selected.length === 0) {
-      // Find tokens based on saved answer order
-      const selectedTokens = savedAnswer.map(id => 
-        tokens.find(t => t.id === id)
-      ).filter((t): t is ExampleToken => t !== undefined);
-      
+      const selectedTokens = savedAnswer
+        .map((id) => tokens.find((t) => t.id === id))
+        .filter((t): t is ExampleToken => t !== undefined);
       setSelected(selectedTokens);
-      
-      // Update available tokens
-      const selectedIds = new Set(savedAnswer);
-      const availableTokens = shuffledTokens.filter(t => !selectedIds.has(t.id));
-      setAvailable(availableTokens);
-
-      // Notify parent
       onSelect(savedAnswer);
     }
   }, [savedAnswer, tokens]);
 
-  // useEffect(() => {
-  //   if (mode === "listen" && questionAudio?.audio_url) {
-  //     const timeoutId = setTimeout(() => {
-  //       playAudio(questionAudio.audio_url);
-  //     }, 300);
+  useEffect(() => {
+    onSelect(selected.map((t) => t.id));
+  }, [selected]);
 
-  //     return () => clearTimeout(timeoutId);
-  //   }
-  // }, [currentQuestionId, mode, questionAudio?.audio_url, playAudio]);
-
-  // Click để phát lại
   const handlePlayAudio = () => {
     if (questionAudio?.audio_url) {
       playAudio(questionAudio.audio_url);
     }
   };
-  const shuffleArray = (array: ExampleToken[]) => {
-    return array
-      .map((item) => ({ item, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ item }) => item);
-  }; 
-
-  const [shuffledTokens] = useState(() => {
-    return shuffleArray([...tokens]);
-  }); 
-
-  useEffect(() => {
-    if (!tokens) return;
-    const selectedTokens = tokens.filter((t) => selectedIds.includes(t.id));
-    const availableTokens = shuffledTokens.filter((t) => !selectedIds.includes(t.id));
-    setSelected(selectedTokens);
-    setAvailable(availableTokens);
-  }, [tokens]);
-
-  // useEffect(() => {
-  //   // Đánh dấu component đã mount
-  //   isMountedRef.current = true;
-    
-  //   // Cleanup function để xử lý unmount
-  //   return () => {
-  //     isMountedRef.current = false;
-  //     // Dừng và xóa audio khi component unmount
-  //     if (currentAudioRef.current) {
-  //       currentAudioRef.current.pause();
-  //       currentAudioRef.current.currentTime = 0;
-  //       currentAudioRef.current = null;
-  //     }
-  //   };
-  // }, []);
-
-  // // Xử lý phát audio cho mode listen
-  // useEffect(() => {
-  //   if (mode === "listen" && questionAudio?.audio_url) {
-  //     // Sử dụng timeout để tránh nhiều audio cùng phát khi thay đổi slide
-  //     const audioTimeout = setTimeout(() => {
-  //       if (isMountedRef.current) {
-  //         playAudio(questionAudio.audio_url);
-  //       }
-  //     }, 300);
-
-  //     // Cleanup function
-  //     return () => {
-  //       clearTimeout(audioTimeout);
-  //     };
-  //   }
-  // }, [questionAudio?.audio_url, mode]);
-
-  useEffect(() => {
-    onSelect(selected.map((t) => t.id));
-  }, [selected]);
 
   const renderCorrectOrder = (): string => {
     const corrects = tokens
@@ -147,10 +90,11 @@ export default function Sort({
   const getStyle = (id: number, index: number, isSelectedArea: boolean): string => {
     const correctIds = tokens
       .filter((t) => typeof t.token_index === "number")
-      .sort((a, b) => (a.token_index! - b.token_index!))
+      .sort((a, b) => a.token_index! - b.token_index!)
       .map((t) => t.id);
 
-    let style = "bg-white border-gray-300 text-cyan_text hover:border-cyan_border hover:bg-cyan_pastel focus:outline-none";
+    let style =
+      "bg-white border-gray-300 text-cyan_text hover:border-cyan_border hover:bg-cyan_pastel focus:outline-none";
     if (isSelectedArea && !isChecked) {
       style = "bg-cyan_pastel border-cyan_border text-cyan_text";
     }
@@ -161,33 +105,21 @@ export default function Sort({
         style = "bg-red_pastel border-red_text text-red_text";
       }
     }
-
     return style;
-  };
-
-  const isTokenSelected = (tokenId: number): boolean => {
-    return selected.some(t => t.id === tokenId);
   };
 
   const handleClick = (token: ExampleToken) => {
     if (isChecked) return;
 
     const tokenAudio = audioFiles.find(
-      (file) =>
-        file.audio_type === "example_token" &&
-        file.example_token_id === token.id
+      (file) => file.audio_type === "example_token" && file.example_token_id === token.id
     );
-    if (tokenAudio) {
-      playAudio(tokenAudio.audio_url);
-    }
+    if (tokenAudio) playAudio(tokenAudio.audio_url);
 
-    if (selected.find((t) => t.id === token.id)) {
-      // Bỏ chọn → quay lại available
+    const isInSelected = selected.some((t) => t.id === token.id);
+    if (isInSelected) {
       setSelected((prev) => prev.filter((t) => t.id !== token.id));
-      setAvailable((prev) => [...prev, token]);
     } else {
-      // Chọn → thêm vào selected
-      setAvailable((prev) => prev.filter((t) => t.id !== token.id));
       setSelected((prev) => [...prev, token]);
     }
   };
@@ -195,35 +127,33 @@ export default function Sort({
   const onDragEnd = (result: DropResult) => {
     if (!result.destination || isChecked) return;
 
-    const sourceId = result.source.droppableId;
-    const destId = result.destination.droppableId;
+    const from = result.source;
+    const to = result.destination;
 
-    const sourceList = sourceId === "available" ? available : selected;
-    const destList = destId === "available" ? available : selected;
+    const sourceList = from.droppableId === "selected" ? [...selected] : [...available];
+    const dragged = sourceList[from.index];
 
-    const draggedItem = sourceList[result.source.index];
+    if (!dragged) return;
 
-    if (sourceId === destId) {
-      // reorder trong cùng một list
-      const newList = Array.from(sourceList);
-      newList.splice(result.source.index, 1);
-      newList.splice(result.destination.index, 0, draggedItem);
+    // Same zone: reorder
+    if (from.droppableId === to.droppableId) {
+      const reordered = [...sourceList];
+      reordered.splice(from.index, 1);
+      reordered.splice(to.index, 0, dragged);
 
-      if (sourceId === "available") setAvailable(newList);
-      else setSelected(newList);
+      if (from.droppableId === "selected") {
+        setSelected(reordered);
+      }
     } else {
-      // move giữa 2 vùng
-      const newSource = Array.from(sourceList);
-      const newDest = Array.from(destList);
-      newSource.splice(result.source.index, 1);
-      newDest.splice(result.destination.index, 0, draggedItem);
-
-      if (sourceId === "available") {
-        setAvailable(newSource);
-        setSelected(newDest);
-      } else {
-        setAvailable(newDest);
-        setSelected(newSource);
+      // Cross move
+      if (from.droppableId === "available" && to.droppableId === "selected") {
+        const newSelected = [...selected];
+        newSelected.splice(to.index, 0, dragged);
+        setSelected(newSelected);
+      } else if (from.droppableId === "selected" && to.droppableId === "available") {
+        const newSelected = [...selected];
+        newSelected.splice(from.index, 1);
+        setSelected(newSelected);
       }
     }
   };
@@ -290,7 +220,6 @@ export default function Sort({
           )}
         </Droppable>
 
-        {/* Token pool - Phương pháp tối ưu */}
         <Droppable droppableId="available" direction="horizontal">
           {(provided) => (
             <div
@@ -299,9 +228,7 @@ export default function Sort({
               className="flex flex-wrap justify-center gap-3 p-4 min-h-[64px]"
             >
               {shuffledTokens.map((token) => {
-                const isInSelected = isTokenSelected(token.id);
-                const availableIndex = available.findIndex((t) => t.id === token.id);
-              
+                const isInSelected = selected.some((t) => t.id === token.id);
                 if (isInSelected) {
                   // Tạo placeholder vô hình cho token đã được chọn
                   return (
@@ -318,7 +245,7 @@ export default function Sort({
                   <Draggable
                     key={`avail-${token.id}`}
                     draggableId={`avail-${token.id}`}
-                    index={availableIndex}
+                    index={available.findIndex((t) => t.id === token.id)}
                     isDragDisabled={doMode === "practice" && isChecked}
                   >
                     {(provided, snapshot) => (
@@ -331,7 +258,7 @@ export default function Sort({
                           px-4 py-2 rounded border font-semibold text-xl
                           cursor-pointer transition-all duration-100
                           ${snapshot.isDragging ? "opacity-70 scale-105 shadow-lg" : ""}
-                          ${getStyle(token.id, availableIndex, false)}
+                          ${getStyle(token.id, 0, false)}
                           ${doMode === "practice" && isChecked ? "pointer-events-none" : ""}
                           ${isInSelected ? "bg-gray-500 text-white" : ""}
                         `}

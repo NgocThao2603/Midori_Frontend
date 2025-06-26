@@ -4,7 +4,6 @@ import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
 
 type MatchProps = {
-  questionId?: number;
   questionTitle: string;
   choices: { id: number; choice: string; is_correct?: boolean }[];
   onSelect: (answer: number[]) => void;
@@ -13,12 +12,12 @@ type MatchProps = {
   checkResult?: "correct" | "incorrect" | null;
   isChecked?: boolean;
   audioFiles: AudioFile[];
+  phraseId?: number;
   meaning?: string;
   doMode: "practice" | "test";
 };
 
 export default function Match({
-  questionId,
   questionTitle,
   choices,
   savedAnswer,
@@ -27,6 +26,7 @@ export default function Match({
   checkResult,
   isChecked,
   audioFiles,
+  phraseId,
   meaning,
   doMode
 }: MatchProps) {
@@ -40,7 +40,7 @@ export default function Match({
   }, [localSelected]);
 
   const questionAudio = audioFiles.find(
-    (file) => file.audio_type === "phrase"
+    (file) => file.audio_type === "phrase" && file.phrase_id === phraseId
   );
 
     // Effect to handle savedAnswer changes

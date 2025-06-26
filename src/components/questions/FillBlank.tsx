@@ -4,7 +4,6 @@ import { AudioFile } from "../../services/api";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 type FillBlankProps = {
-  questionId?: number;
   questionTitle: string;
   savedAnswer?: string;
   onSelect: (answer: string) => void;
@@ -12,13 +11,13 @@ type FillBlankProps = {
   checkResult?: "correct" | "incorrect" | null;
   correct_answers: string[] | null;
   audioFiles: AudioFile[];
+  exampleId?: number;
   mode: "translate" | "listen";
   meaning?: string;
   doMode: "practice" | "test";
 };
 
 export default function FillBlank({
-  questionId,
   questionTitle,
   savedAnswer,
   onSelect,
@@ -26,6 +25,7 @@ export default function FillBlank({
   checkResult,
   correct_answers = [],
   audioFiles,
+  exampleId,
   mode,
   meaning,
   doMode
@@ -47,7 +47,7 @@ export default function FillBlank({
   };
 
   const questionAudio = audioFiles.find(
-    (file) => file.audio_type === "example"
+    (file) => file.audio_type === "example" && file.example_id === exampleId
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

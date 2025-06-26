@@ -1,6 +1,7 @@
 import React from "react";
 import ReactCardFlip from "react-card-flip";
 import { Tag } from "antd";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 interface VocabCardProps {
   id: number;
@@ -11,6 +12,7 @@ interface VocabCardProps {
   meanings: string[];
   flipped: boolean;
   onFlip: (id: number) => void;
+  playAudio?: (vocabId: number) => void;
 }
 
 const wordTypeColors: Record<string, string> = {
@@ -23,7 +25,7 @@ const wordTypeColors: Record<string, string> = {
   "Katakana": "gold",
 };
 
-const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_type, meanings, flipped, onFlip }) => {
+const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_type, meanings, flipped, onFlip, playAudio }) => {
   return (
     <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
       {/* Front Side */}
@@ -33,6 +35,15 @@ const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_ty
       >
         <p className="absolute top-4 left-6 text-2xl font-bold">{id}</p>
         <p className="text-4xl font-bold">{kanji}</p>
+        <div 
+          className="absolute -bottom-8 items-center bg-cyan_pastel border border-cyan_border p-4 rounded-full"
+          onClick={e => {
+            e.stopPropagation();
+            playAudio?.(id);
+          }}
+        >
+          <VolumeUpIcon style={{ width: 40, height: 40 }} />
+        </div>
       </div>
       {/* Back Side */}
       <div 
@@ -51,6 +62,15 @@ const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_ty
           {meanings.map((m, index) => (
             <p key={index}>{m}</p>
           ))}
+        </div>
+        <div 
+          className="absolute -bottom-8 items-center bg-cyan_pastel border border-cyan_border p-4 rounded-full"
+          onClick={e => {
+            e.stopPropagation();
+            playAudio?.(id);
+          }}
+        >
+          <VolumeUpIcon style={{ width: 40, height: 40 }} />
         </div>
       </div>
     </ReactCardFlip>

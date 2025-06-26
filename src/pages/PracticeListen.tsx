@@ -20,14 +20,11 @@ const PracticeListen = () => {
       try {
         setLoading(true);
         const [questionsData, meaningsData] = await Promise.all([
-          fetchQuestionsByLesson(lessonIdNumber),
+          fetchQuestionsByLesson(lessonIdNumber, "example"),
           fetchLessonMeaningsByLesson(lessonIdNumber)
         ]);
         
-        const filtered = questionsData.filter((q) =>
-          q.question_type === "sorting" || q.question_type === "fill_blank"
-        );
-        setQuestions(filtered);
+        setQuestions(questionsData);
         setLessonMeanings(meaningsData || []);
       } catch (error) {
         console.error("Error loading questions or meanings:", error);
