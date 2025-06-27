@@ -144,12 +144,12 @@ const LearnPhrase: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const currentCard = flashcards[currentIndex];
       if (event.key === "ArrowLeft" && currentIndex > 0) {
         handlePrev();
       } else if (event.key === "ArrowRight" && currentIndex < flashcards.length - 1) {
         handleNext();
-      } else if (event.key === "ArrowUp") {
-        const currentCard = flashcards[currentIndex];
+      } else if (event.key === "ArrowUp") {     
         if (currentCard.type === "vocab") {
           handleFlip("vocab", currentCard.data.id);
         } else {

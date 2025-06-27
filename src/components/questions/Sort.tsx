@@ -19,6 +19,7 @@ type SortProps = {
   currentQuestionId: number;
   meaning?: string;
   doMode: "practice" | "test";
+  disableResultAudio?: boolean;
 };
 
 export default function Sort({
@@ -35,8 +36,9 @@ export default function Sort({
   currentQuestionId,
   meaning,
   doMode,
+  disableResultAudio
 }: SortProps) {
-  const { playAudio } = useAudio();
+  const { playAudio, stopAudio } = useAudio();
   const [selected, setSelected] = useState<ExampleToken[]>([]);
   const [shuffledTokens, setShuffledTokens] = useState<ExampleToken[]>([]);
 
@@ -75,6 +77,7 @@ export default function Sort({
   }, [selected]);
 
   const handlePlayAudio = () => {
+    stopAudio();
     if (questionAudio?.audio_url) {
       playAudio(questionAudio.audio_url);
     }
@@ -281,6 +284,7 @@ export default function Sort({
           correctText={isChecked ? renderCorrectOrder() : ""}
           resultAudioUrl={questionAudio?.audio_url}
           meaning={meaning}
+          disableResultAudio={disableResultAudio}
         />
       )}
     </div>

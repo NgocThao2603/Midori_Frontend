@@ -10,16 +10,17 @@ type AnswerResultProps = {
   correctText?: string;
   resultAudioUrl?: string;
   meaning?: string;
+  disableResultAudio?: boolean;
 };
 
-export default function AnswerResult({ result, correctText, resultAudioUrl, meaning }: AnswerResultProps) {
+export default function AnswerResult({ result, correctText, resultAudioUrl, meaning, disableResultAudio }: AnswerResultProps) {
   const { playAudio } = useAudio();
-  
-  if (!result) return null;
 
   const isCorrect = result === "correct";
 
   useEffect(() => {
+    if (disableResultAudio || !result) return;
+
     let checkAudio: HTMLAudioElement | null = null;
 
     if (result === "correct") {
@@ -43,7 +44,9 @@ export default function AnswerResult({ result, correctText, resultAudioUrl, mean
       checkAudio?.pause();
       checkAudio = null;
     };
-  }, [result, resultAudioUrl, playAudio]); 
+  }, [result, resultAudioUrl, playAudio, disableResultAudio]); 
+
+  if (!result) return null;
 
   return (
     <div className={`text-center mt-10 ${isCorrect ? "text-secondary" : "text-red_text"}`}>

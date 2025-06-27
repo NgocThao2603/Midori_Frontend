@@ -7,6 +7,7 @@ import point from "../assets/point.png";
 import { getTests, TestInfo, fetchTestAttemptsByTestId, TestAttempt, createTestAttempt } from "../services/api";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { Select, MenuItem, FormControl, TablePagination } from "@mui/material";
 import { StatusBadge } from "../components/test_attempts/StatusBadge";
 import { formatDuration } from "../services/timeService";
@@ -337,10 +338,18 @@ const Test: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Button
-                          onClick={() => navigate(`/test-result/${attempt.id}`)}
+                          onClick={() => {
+                            if (attempt.status !== "in_progress") {
+                              navigate(`/test-result/${attempt.id}`);
+                            }
+                          }}
                           className="min-w-0 !p-1 focus:outline-none"
                         >
-                          <RemoveRedEyeIcon className="text-cyan_text" />
+                          {attempt.status === "in_progress" ? (
+                            <VisibilityOffOutlinedIcon className="text-gray-400" />
+                          ) : (
+                            <RemoveRedEyeIcon className="text-cyan_text" />
+                          )}
                         </Button>
                       </td>
                     </tr>

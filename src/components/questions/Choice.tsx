@@ -17,6 +17,7 @@ type ChoiceProps = {
   exampleId?: number;
   meaning?: string;
   doMode: "practice" | "test";
+  disableResultAudio?: boolean;
 };
 
 export default function Choice({
@@ -32,7 +33,8 @@ export default function Choice({
   phraseId,
   exampleId,
   meaning,
-  doMode
+  doMode,
+  disableResultAudio
 }: ChoiceProps) {
   const questionAudio = audioFiles.find(
     (file) => (file.audio_type === "vocab" && file.vocabulary_id === vocabId) ||
@@ -113,6 +115,7 @@ export default function Choice({
           correctText={choices.find(c => c.is_correct)?.choice}
           resultAudioUrl={questionAudio?.audio_url}
           meaning={meaning}
+          disableResultAudio={disableResultAudio}
         />
       )}
     </div>

@@ -15,6 +15,7 @@ type MatchProps = {
   phraseId?: number;
   meaning?: string;
   doMode: "practice" | "test";
+  disableResultAudio?: boolean;
 };
 
 export default function Match({
@@ -28,7 +29,8 @@ export default function Match({
   audioFiles,
   phraseId,
   meaning,
-  doMode
+  doMode,
+  disableResultAudio
 }: MatchProps) {
   const numBlanks = (questionTitle.match(/___/g) || []).length;
   const [localSelected, setLocalSelected] = useState<number[]>(
@@ -330,6 +332,7 @@ export default function Match({
           correctText={isChecked ? renderCorrectAnswerText() : ""}
           resultAudioUrl={questionAudio?.audio_url}
           meaning={meaning}
+          disableResultAudio={disableResultAudio}
         />
       )}
     </div>

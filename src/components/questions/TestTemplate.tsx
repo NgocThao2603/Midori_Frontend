@@ -1,7 +1,7 @@
 import { addMinutes, parseISO } from "date-fns";
 import { Carousel } from "antd";
 import { CarouselRef } from "antd/es/carousel";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import ArrowBackIosOutlined from "@mui/icons-material/ArrowBackIosNewOutlined";
@@ -17,8 +17,10 @@ import Sort from "./Sort";
 import FillBlank from "./FillBlank";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
 import timer from "../../assets/timer.png";
+import countdown from "../../assets/sounds/countdown.wav";
 import ResultTestPopup from "../shared/ResultTestPopup";
 import { formatDuration } from "../../services/timeService";
+import { useAudio } from "../../contexts/AudioContext";
 
 type TestTemplateProps = {
   questions: Question[];
@@ -28,6 +30,7 @@ type TestTemplateProps = {
   start_time: string;
   duration_minutes: number;
   pass_score: number;
+  audioFiles?: AudioFile[];
 };
 
 export default function TestTemplate({
@@ -37,21 +40,20 @@ export default function TestTemplate({
   lessonMeanings, 
   start_time,
   duration_minutes,
-  pass_score 
+  pass_score,
+  audioFiles = []
 }: TestTemplateProps) {
   const TOTAL_QUESTIONS = questions.length;
   const WARNING_TIME = 300;
   const navigate = useNavigate();
   const carouselRef = useRef<CarouselRef | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const location = useLocation();
   const [questionModes, setQuestionModes] = useState<{[key: number]: "translate" | "listen"}>({});
   const [savedQuestions, setSavedQuestions] = useState<number[]>([]);
 
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+  const { playAudio, stopAudio } = useAudio();
+  const countdownAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const globalAudioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: any }>({});
   const [waitingToSaveId, setWaitingToSaveId] = useState<number | null>(null);
@@ -76,28 +78,6 @@ export default function TestTemplate({
     setInitialAnswers,
   } = useQuestionChecker(questions, "test");
 
-  const handleAudio = async (url: string) => {
-    try {
-      // Dừng audio hiện tại nếu có
-      if (globalAudioRef.current) {
-        globalAudioRef.current.pause();
-        globalAudioRef.current.currentTime = 0;
-      }
-
-      const audio = new Audio(url);
-      globalAudioRef.current = audio;
-      audio.volume = 1;
-      
-      setIsPlaying(true);
-      audio.onended = () => setIsPlaying(false);
-      
-      await audio.play();
-    } catch (err) {
-      console.warn("Audio play error:", err);
-      setIsPlaying(false);
-    }
-  };
-
   useEffect(() => {
     const modes: {[key: number]: "translate" | "listen"} = {};
     questions.forEach(question => {
@@ -108,7 +88,6 @@ export default function TestTemplate({
     setQuestionModes(modes);
   }, [questions]);
 
-// Sau đó dùng stableSetInitialAnswer trong useEffect
   useEffect(() => {
     const loadSavedAnswers = async () => {
       try {
@@ -166,35 +145,62 @@ export default function TestTemplate({
     }
   }, [attemptId]);
 
-  // Dừng audio khi:
-  // 1. Chuyển slide
   useEffect(() => {
-    if (globalAudioRef.current) {
-      globalAudioRef.current.pause();
-      globalAudioRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
-  }, [currentSlide]);
+    countdownAudioRef.current = new Audio(countdown);
+  }, []);
 
-  // 2. Kiểm tra đáp án
+  // Auto-play audio for listen mode questions
   useEffect(() => {
     const currentQuestion = questions[currentSlide];
-    if (isChecked(currentQuestion?.id) && globalAudioRef.current) {
-      globalAudioRef.current.pause();
-      globalAudioRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
-  }, [isChecked, currentSlide, questions]);
+    if (!currentQuestion) return;
 
-  // 3. Unmount component
+    const questionMode = questionModes[currentQuestion.id];
+    
+    // Auto-play audio for listen mode sorting and fill_blank questions
+    if ((questionMode === "listen" || 
+         (currentQuestion.question_type === "choice" || currentQuestion.question_type === "matching")) && 
+        audioFiles.length > 0) {
+      
+      let audioFile: AudioFile | null = null;
+      
+      if (currentQuestion.example_id) {
+        audioFile = audioFiles.find(
+          file => file.audio_type === "example" && file.example_id === currentQuestion.example_id
+        ) || null;
+      }
+
+      if (audioFile?.audio_url) {
+        const timeoutId = setTimeout(() => {
+          stopAudio();
+          playAudio(audioFile.audio_url);
+        }, 500);
+
+        return () => {
+          clearTimeout(timeoutId);
+        };
+      }
+    }
+  }, [currentSlide, questionModes, questions, playAudio, stopAudio]);
+
+  // Stop audio when changing slides
+  useEffect(() => {
+    stopAudio();
+  }, [currentSlide, stopAudio]);
+
+  // Stop audio when checking answers
+  useEffect(() => {
+    const currentQuestion = questions[currentSlide];
+    if (isChecked(currentQuestion?.id)) {
+      stopAudio();
+    }
+  }, [isChecked, currentSlide, questions, stopAudio]);
+
+  // Stop audio on unmount
   useEffect(() => {
     return () => {
-      if (globalAudioRef.current) {
-        globalAudioRef.current.pause();
-        globalAudioRef.current = null;
-      }
+      stopAudio();
     };
-  }, []);
+  }, [stopAudio]);
 
   const goToBack = () => {
     if (currentSlide > 0 && carouselRef.current) {
@@ -212,20 +218,6 @@ export default function TestTemplate({
     return `/test/${lessonId}`;
   };
 
-  useEffect(() => {
-    fetchAudioFiles().then(setAudioFiles);
-  }, []);
-
-  // Dừng audio khi kiểm tra đáp án
-  useEffect(() => {
-    const currentQuestion = questions[currentSlide];
-    if (isChecked(currentQuestion?.id) && globalAudioRef.current) {
-      globalAudioRef.current.pause();
-      globalAudioRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
-  }, [isChecked, currentSlide]);
-  
   const handleProgressBarClick = (index: number) => {
     if (carouselRef.current) {
       carouselRef.current.goTo(index);
@@ -344,6 +336,8 @@ export default function TestTemplate({
     const startTimeVN = parseISO(start_time);
     const endTimeVN = addMinutes(startTimeVN, duration_minutes);
 
+    let countdownPlayed = false;
+
     const timer = setInterval(() => {
       const now = new Date();
       
@@ -359,7 +353,15 @@ export default function TestTemplate({
       }
 
       // Chuyển đổi thành seconds và cập nhật state
-      setTimeLeft(Math.floor(diff / 1000));
+      const secondsLeft = Math.floor(diff / 1000);
+      setTimeLeft(secondsLeft);
+
+      if (secondsLeft === 5 && !countdownPlayed) {
+        countdownPlayed = true;
+        if (countdownAudioRef.current) {
+          countdownAudioRef.current.play();
+        }
+      }
     }, 1000);
 
     // Tính thời gian còn lại ban đầu
@@ -409,26 +411,28 @@ export default function TestTemplate({
             </div>
           </div>
         </div>
-        {Array.from({ length: TOTAL_QUESTIONS }).map((_, index) => {
-          const questionId = questions[index]?.id;
-          const isSaved = savedQuestions.includes(questionId);
+        <div className="grid [grid-template-columns:repeat(20,minmax(0,1fr))] gap-x-2 gap-y-4 w-full">
+          {Array.from({ length: TOTAL_QUESTIONS }).map((_, index) => {
+            const questionId = questions[index]?.id;
+            const isSaved = savedQuestions.includes(questionId);
 
-          let colorClass = "bg-gray-300";
+            let colorClass = "bg-gray-300";
 
-          if (index === currentSlide) {
-            colorClass = "bg-cyan_border"; 
-          } else if (isSaved) {
-            colorClass = "bg-secondary";
-          }
-          return (
-            <div
-              key={index}
-              style={{ flex: 1 }}
-              className={`h-3.5 rounded-full transition-all duration-300 cursor-pointer ${colorClass}`}
-              onClick={() => handleProgressBarClick(index)}
-            />
-          );
-        })}
+            if (index === currentSlide) {
+              colorClass = "bg-cyan_border"; 
+            } else if (isSaved) {
+              colorClass = "bg-secondary";
+            }
+            return (
+              <div
+                key={index}
+                style={{ flex: 1 }}
+                className={`h-4 rounded-full cursor-pointer ${colorClass}`}
+                onClick={() => handleProgressBarClick(index)}
+              />
+            );
+          })}
+        </div>
 
         <div>
           <Button
@@ -465,7 +469,10 @@ export default function TestTemplate({
       <Carousel
         ref={carouselRef}
         dots={false}
-        beforeChange={(_, next) => setCurrentSlide(next)}
+        beforeChange={(_, next) => {
+          stopAudio();
+          setCurrentSlide(next);
+        }}
         draggable={false}
         className="top-[15vh] w-[75vw] mx-auto"
       >
@@ -479,6 +486,9 @@ export default function TestTemplate({
                 selectedId={userAnswers[question.id] as number}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
+                vocabId={question.vocabulary_id as number}
+                phraseId={question.phrase_id as number}
+                exampleId={question.example_id as number}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="test"
               />
@@ -492,6 +502,7 @@ export default function TestTemplate({
                 selectedIds={userAnswers[question.id] as number[]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
+                phraseId={question.phrase_id as number}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="test"
               />
@@ -505,10 +516,9 @@ export default function TestTemplate({
                 selectedIds={userAnswers[question.id] as number[]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
+                exampleId={question.example_id as number}
                 mode={questionModes[question.id]}
-                onPlay={handleAudio}
-                isPlaying={isPlaying}
-                currentQuestionId={currentSlide}
+                currentQuestionId={question.id}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="test"
               />
@@ -520,6 +530,7 @@ export default function TestTemplate({
                 onSelect={(answer) => setAnswer(question.id, answer)}
                 correct_answers={question.correct_answers}
                 audioFiles={audioFiles}
+                exampleId={question.example_id as number}
                 mode={questionModes[question.id]}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="test"

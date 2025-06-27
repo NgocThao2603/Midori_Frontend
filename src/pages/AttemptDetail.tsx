@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { fetchQuestionsByLesson, fetchLessonMeaningsByLesson, fetchTestAttempt, LessonMeaning, Question, TestAttempt } from "../services/api";
+import { fetchQuestionsByLesson, fetchLessonMeaningsByLesson, fetchTestAttempt, LessonMeaning, Question, TestAttempt, AudioFile } from "../services/api";
 import { useParams } from "react-router-dom";
 import TestDetail from "../components/test_attempts/TestDetail";
+import { fetchAudioFiles } from "../services/AudioService";
 
 const AttemptDetail = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -11,6 +12,7 @@ const AttemptDetail = () => {
   const [loading, setLoading] = useState(true);
   const [lessonMeanings, setLessonMeanings] = useState<LessonMeaning[]>([]);
   const [testAttempt, setTestAttempt] = useState<TestAttempt | null>(null);
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
 
   useEffect(() => {
     if (!attemptIdNumber) return;
@@ -37,7 +39,7 @@ const AttemptDetail = () => {
         // Lấy meanings cho bài test
         const meaningsData = await fetchLessonMeaningsByLesson(attemptData.test.lesson_id);
         setLessonMeanings(meaningsData);
-
+        fetchAudioFiles().then(setAudioFiles);
       } catch (error) {
         console.error("Error loading test attempt questions:", error);
         setQuestions([]);
@@ -66,7 +68,8 @@ const AttemptDetail = () => {
         questions={questions}
         lessonId={Number(testAttempt.test.lesson_id)}
         attemptId={Number(attemptId)} 
-        lessonMeanings={lessonMeanings} 
+        lessonMeanings={lessonMeanings}
+        audioFiles={audioFiles}
       />
     </div>
   );

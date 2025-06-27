@@ -6,7 +6,6 @@ import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutl
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { Button } from "@mui/material";
 import { AudioFile, Question, updateDailyPoint, updateLessonStatus, updateUserPoint } from "../../services/api";
-import { fetchAudioFiles } from "../../services/AudioService";
 import { getMeaningForQuestion } from "../../services/questionService";
 import { LessonMeaning } from "../../services/api";
 import Choice from "./Choice";
@@ -24,9 +23,10 @@ type TemplateProps = {
   lessonId: number;
   lessonMeanings?: LessonMeaning[];
   practice_mode: "phrase" | "translate" | "listen" | "test";
+  audioFiles?: AudioFile[];
 };
 
-export default function Template({ questions, lessonId, lessonMeanings, practice_mode }: TemplateProps) {
+export default function Template({ questions, lessonId, lessonMeanings, practice_mode, audioFiles = [] }: TemplateProps) {
   const TOTAL_QUESTIONS = questions.length;
   const MAX_WRONG_ANSWERS = Math.floor(TOTAL_QUESTIONS * 0.25);
   const navigate = useNavigate();
@@ -35,7 +35,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
   const location = useLocation();
   const mode = location.pathname.includes("translate") ? "translate" : "listen";
 
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
   const { playAudio, stopAudio  } = useAudio();
 
   const { lessonLevelMap } = useLessonLevelMap();
@@ -49,10 +48,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
     setAnswer,
     checkAnswer,
   } = useQuestionChecker(questions, "practice");
-
-  useEffect(() => {
-    fetchAudioFiles().then(setAudioFiles);
-  }, []);
   
   useEffect(() => {
     if (practice_mode === "listen" && audioFiles.length > 0 && questions[currentSlide]) {
@@ -120,20 +115,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
       // state: fromLessonSection ? { fromLessonSection: true } : undefined
     };
   };
-
-  // useEffect(() => {
-  //   fetchAudioFiles().then(setAudioFiles);
-  // }, []);
-
-  // // Dừng audio khi kiểm tra đáp án
-  // useEffect(() => {
-  //   const currentQuestion = questions[currentSlide];
-  //   if (isChecked(currentQuestion?.id) && globalAudioRef.current) {
-  //     globalAudioRef.current.pause();
-  //     globalAudioRef.current.currentTime = 0;
-  //     setIsPlaying(false);
-  //   }
-  // }, [isChecked, currentSlide]);
 
   const [showResult, setShowResult] = useState(false);
   const [isAllAnswered, setIsAllAnswered] = useState(false);

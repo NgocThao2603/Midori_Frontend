@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchQuestionsByLesson, fetchTestAttempt, LessonMeaning, Question, TestAttempt } from "../services/api";
+import { AudioFile, fetchQuestionsByLesson, fetchTestAttempt, LessonMeaning, Question, TestAttempt } from "../services/api";
 import { useParams } from "react-router-dom";
 import TestTemplate from "../components/questions/TestTemplate";
 import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
+import { fetchAudioFiles } from "../services/AudioService";
 
 const PracticeTest = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -12,6 +13,7 @@ const PracticeTest = () => {
   const [loading, setLoading] = useState(true);
   const [lessonMeanings, setLessonMeanings] = useState<LessonMeaning[]>([]);
   const [testAttempt, setTestAttempt] = useState<TestAttempt | null>(null);
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
   const lessonId = testAttempt?.test?.lesson_id;
   useMarkStudiedByLessonId(lessonId);
 
@@ -38,6 +40,7 @@ const PracticeTest = () => {
           .filter((q): q is Question => q !== undefined);
 
         setQuestions(questionsDetailed);
+        fetchAudioFiles().then(setAudioFiles);
 
       } catch (error) {
         console.error("Error loading test attempt questions:", error);
@@ -71,6 +74,7 @@ const PracticeTest = () => {
         start_time={testAttempt.start_time}
         duration_minutes={testAttempt.test.duration_minutes}
         pass_score={testAttempt.test.pass_score}
+        audioFiles={audioFiles}
       />
     </div>
   );

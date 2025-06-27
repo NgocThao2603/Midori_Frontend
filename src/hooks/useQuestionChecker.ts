@@ -60,13 +60,15 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
       const correctAnswer = question.correct_answers?.[0] || "";
       const userText = typeof userAnswer === "string" ? userAnswer : "";
       
+      const removePunctuation = (str: string) => {
+        return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]「」『』【】［］<>＜＞〈〉《》、。・！？…]/g, '');
+      };
       // Normalize strings để so sánh
       const normalizeString = (str: string) => {
-        return str
+        return removePunctuation(str)
           .trim()
           .toLowerCase()
           .replace(/\s+/g, ' ')
-          .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
           .replace(/\u3000/g, ' ');
       };
 
