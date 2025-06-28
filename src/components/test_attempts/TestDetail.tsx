@@ -6,7 +6,6 @@ import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutl
 import ArrowBackIosOutlined from "@mui/icons-material/ArrowBackIosNewOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { AudioFile, getTestAnswersByTestAttempt, Question } from "../../services/api";
-import { fetchAudioFiles } from "../../services/AudioService";
 import { getMeaningForQuestion } from "../../services/questionService";
 import { LessonMeaning } from "../../services/api";
 import Choice from "../questions/Choice";
@@ -16,6 +15,7 @@ import FillBlank from "../questions/FillBlank";
 import { useQuestionChecker } from "../../hooks/useQuestionChecker";
 import { useMarkStudiedByLessonId } from "../../hooks/useMarkStudiedByLessonId";
 import { useAudio } from "../../contexts/AudioContext";
+import { useLessonEntry } from "../../contexts/LessonEntryContext";
 
 type TestTemplateProps = {
   questions: Question[];
@@ -38,6 +38,7 @@ export default function TestTemplate({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [questionModes, setQuestionModes] = useState<{[key: number]: "translate" | "listen"}>({});
   const [savedQuestions, setSavedQuestions] = useState<number[]>([]);
+  const { fromLessonSection } = useLessonEntry();
 
   const { playAudio, stopAudio } = useAudio();
 
@@ -149,7 +150,7 @@ export default function TestTemplate({
         const timeoutId = setTimeout(() => {
           stopAudio();
           playAudio(audioFile.audio_url);
-        }, 500);
+        }, 50);
 
         return () => {
           clearTimeout(timeoutId);
@@ -245,7 +246,7 @@ export default function TestTemplate({
         <CloseOutlinedIcon
           style={{ fontSize: 40 }}
           className="ml-4 cursor-pointer"
-          onClick={() => navigate(getBackRoute(), { replace: true })}
+          onClick={() => navigate(getBackRoute(), { replace: true, state: fromLessonSection ? { fromLessonSection: true } : undefined })}
         />
       </div>
       

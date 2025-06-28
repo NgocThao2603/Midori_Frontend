@@ -17,6 +17,7 @@ import count from "../../assets/count.jpg";
 import ResultPopup from "../shared/ResultPopup";
 import { useAudio } from "../../contexts/AudioContext";
 import { useLessonLevelMap } from "../../contexts/LessonLevelContext";
+import { useLessonEntry } from "../../contexts/LessonEntryContext";
 
 type TemplateProps = {
   questions: Question[];
@@ -39,6 +40,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
 
   const { lessonLevelMap } = useLessonLevelMap();
   const currentLevel = lessonLevelMap.get(lessonId);
+  const { fromLessonSection } = useLessonEntry();
 
   // Destructure isChecked from useQuestionChecker
   const {
@@ -67,7 +69,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
         const timeoutId = setTimeout(() => {
           stopAudio(); // Dừng audio cũ trước
           playAudio(audioFile.audio_url);
-        }, 500); // Delay 500ms để đảm bảo UI đã render
+        }, 50); // Delay 500ms để đảm bảo UI đã render
 
         return () => {
           clearTimeout(timeoutId);
@@ -222,7 +224,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
             const backRoute = getBackRoute();
             navigate(backRoute.pathname, { 
               replace: true,
-              // state: backRoute.state
+              state: fromLessonSection ? { fromLessonSection: true } : undefined
             });
           }}
         />

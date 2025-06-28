@@ -1,31 +1,35 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, IconButton, Menu, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
-import avatar from "../assets/avatar.svg";
 import point from "../assets/point.png";
-import { logoutUser, fetchUserPoint } from "../services/api";
+import { logoutUser, fetchUserPoint, getProfile, updateProfile } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import ProfilePopup from "./ProfilePopup";
+import { toast } from "react-toastify";
 
 interface HeaderProps {
   level: string;
   setLevel: (level: string) => void; // Nhận function từ Layout
   isLoggedIn: boolean;
+  profileUpdated?: number; 
+  setProfileUpdated?: (updater: (prev: number) => number) => void;
 }
-const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
+const Header = ({ level, setLevel, isLoggedIn, profileUpdated, setProfileUpdated }: HeaderProps) => {
   const [points, setPoints] = React.useState<number | null>(null);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
   const isRegisterPage = location.pathname === "/register";
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [user, setUser] = useState({ username: "", email: "", dob: "", phone: "", avatarUrl: "" });
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     setLevel(event.target.value);
   };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -33,9 +37,18 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
     setAnchorEl(null);
   };
 
-  const handleProfileClick = () => {
+  const handleProfileClick = async () => {
     handleClose();
-    navigate("/profile");
+    const res = await getProfile();
+    const userData = res.user;
+    setUser({
+      username: userData.username,
+      email: userData.email,
+      avatarUrl: userData.avatar_url,
+      dob: userData.dob,
+      phone: userData.phone,
+    });
+    setProfileOpen(true);
   };
 
   const handleLogoutClick = async () => {
@@ -61,6 +74,59 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
 
     loadPoint();
   }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getProfile();
+        const userData = res.user;
+        setUser({
+          username: userData.username ?? "",
+          email: userData.email ?? "",
+          avatarUrl: userData.avatar_url ?? "",
+          dob: userData.dob ?? "",
+          phone: userData.phone ?? "",
+        });
+      } catch (e) {
+        console.error("Không thể lấy thông tin người dùng:", e);
+      }
+    };
+    fetchUser();
+  }, [profileUpdated]);
+
+  const handleProfileSave = async (formData: any) => {
+    try {
+      // Chuẩn hóa dữ liệu gửi lên backend
+      const payload: any = {
+        dob: formData.dob,
+        phone: formData.phone,
+        avatar_url: formData.avatarUrl,
+      };
+      if (formData.password) {
+        payload.current_password = formData.currentPassword;
+        payload.password = formData.password;
+      }
+      await updateProfile(payload);
+      toast.success("Cập nhật thông tin thành công!");
+
+      // Lấy lại thông tin user mới nhất
+      const res = await getProfile();
+      const userData = res.user;
+      setUser({
+        username: userData.username,
+        email: userData.email,
+        avatarUrl: userData.avatar_url,
+        dob: userData.dob,
+        phone: userData.phone,
+      });
+      if (setProfileUpdated) {
+        setProfileUpdated(prev => prev + 1);
+      }
+      setProfileOpen(false);
+    } catch (error: any) {
+      toast.error(error?.message || "Cập nhật thất bại!");
+    }
+  };
 
   if (!isLoggedIn) {
     // Header cho người chưa đăng nhập (Landing Page)
@@ -199,7 +265,7 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
           },
         }}
       >
-        <Avatar src={avatar} alt="Avatar" />
+        <Avatar src={user.avatarUrl} alt="Avatar" />
       </IconButton>
 
       {/* Menu dropdown */}
@@ -232,6 +298,13 @@ const Header = ({ level, setLevel, isLoggedIn }: HeaderProps) => {
           Đăng xuất
         </MenuItem>
       </Menu>
+
+      <ProfilePopup
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        user={user}
+        onSave={handleProfileSave}
+      />
     </div>
     </header>
   );

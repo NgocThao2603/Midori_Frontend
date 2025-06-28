@@ -21,6 +21,7 @@ import countdown from "../../assets/sounds/countdown.wav";
 import ResultTestPopup from "../shared/ResultTestPopup";
 import { formatDuration } from "../../services/timeService";
 import { useAudio } from "../../contexts/AudioContext";
+import { useLessonEntry } from "../../contexts/LessonEntryContext";
 
 type TestTemplateProps = {
   questions: Question[];
@@ -58,6 +59,7 @@ export default function TestTemplate({
   const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: any }>({});
   const [waitingToSaveId, setWaitingToSaveId] = useState<number | null>(null);
   const [isLoadingSavedAnswers, setIsLoadingSavedAnswers] = useState(true);
+  const { fromLessonSection } = useLessonEntry();
 
   const [showResult, setShowResult] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
@@ -173,7 +175,7 @@ export default function TestTemplate({
         const timeoutId = setTimeout(() => {
           stopAudio();
           playAudio(audioFile.audio_url);
-        }, 500);
+        }, 50);
 
         return () => {
           clearTimeout(timeoutId);
@@ -450,7 +452,7 @@ export default function TestTemplate({
         <CloseOutlinedIcon
           style={{ fontSize: 40 }}
           className="ml-4 cursor-pointer"
-          onClick={() => navigate(getBackRoute(), { replace: true })}
+          onClick={() => navigate(getBackRoute(), { replace: true, state: fromLessonSection ? { fromLessonSection: true } : undefined })}
         />
       </div>
       

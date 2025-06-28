@@ -23,7 +23,7 @@ export const useQuestionAudio = ({
   exampleTokenId,
   mode,
   autoPlay = false,
-  autoPlayDelay = 300
+  autoPlayDelay =50
 }: UseQuestionAudioOptions) => {
   const { playAudio, stopAudio, isPlaying } = useAudio();
   const [questionAudio, setQuestionAudio] = useState<AudioFile | null>(null);

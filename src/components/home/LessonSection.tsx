@@ -3,6 +3,7 @@ import FeatureButton from "./FeatureButton";
 import LessonCard from "./LessonCard";
 import { Book, Pencil, Headphones, FileText, LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLessonEntry } from "../../contexts/LessonEntryContext";
 
 type LessonSectionProps = {
   lessonId?: number;
@@ -20,6 +21,7 @@ const defaultFeatures = [
 
 const LessonSection = React.forwardRef<HTMLDivElement, LessonSectionProps>(
   ({ lessonId, chapter, title, doneStatus }, ref) => {
+    const { setFromLessonSection } = useLessonEntry();
     const navigate = useNavigate();
         const handleStartLesson = () => {
       if (!lessonId) return;
@@ -31,6 +33,7 @@ const LessonSection = React.forwardRef<HTMLDivElement, LessonSectionProps>(
 
       // If all features are complete, navigate to first feature
       if (firstIncompletePath === -1) {
+        setFromLessonSection(true);
         navigate(`/learn-phrase/${lessonId}`, {
           state: { fromLessonSection: true }
         });
@@ -55,7 +58,7 @@ const LessonSection = React.forwardRef<HTMLDivElement, LessonSectionProps>(
         default:
           path = `/learn-phrase/${lessonId}`;
       }
-
+      setFromLessonSection(true);
       navigate(path, {
         state: { fromLessonSection: true }
       });
@@ -127,6 +130,7 @@ const FeatureButtonWrapper: React.FC<{ position: string; icon: LucideIcon; featu
   lessonId,
 }) => {
   const navigate = useNavigate();
+  const { setFromLessonSection } = useLessonEntry();
 
   const handleClick = () => {
     let path = `/learn-phrase/${lessonId}`;
@@ -145,6 +149,7 @@ const FeatureButtonWrapper: React.FC<{ position: string; icon: LucideIcon; featu
         path = `/learn-phrase/${lessonId}`;
     }
 
+    setFromLessonSection(true);
     navigate(path, {
       state: { fromLessonSection: true },
     });

@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Select, MenuItem, FormControl } from "@mui/material";
-import { getOverallRanking, getLevelRanking } from "../services/api";
+import { getOverallRanking, getLevelRanking, RankingUser } from "../services/api";
 import { FaTrophy } from "react-icons/fa";
 import avatar from "../assets/avatar.svg";
 import point from "../assets/point.png";
-
-interface RankingUser {
-  id: number;
-  username: string;
-  point: number;
-  avatar?: string;
-}
 
 const periodOptions = [
   { value: "day", label: "Hôm nay" },
@@ -25,9 +18,9 @@ const TopThreeRanking = ({ users, currentUserId }: { users: RankingUser[], curre
   const getPositionClass = (position: number) => {
     const isCurrentUser = topThree[position]?.id === currentUserId;
     const baseClasses = {
-      0: "w-40 h-48 bg-[#fcffe6] border border-[#ffe58f]",
-      1: "w-32 h-36 bg-[#f0f5ff] border border-[#c7d1f4]",
-      2: "w-28 h-32 bg-[#fff0f6] border border-[#ffadd2]"
+      0: "w-44 h-56 bg-[#fcffe6] border border-[#ffe58f]",
+      1: "w-36 h-44 bg-[#f0f5ff] border border-[#c7d1f4]",
+      2: "w-32 h-36 bg-[#fff0f6] border border-[#ffadd2]"
     };
 
     if (!isCurrentUser) return baseClasses[position as keyof typeof baseClasses];
@@ -42,9 +35,10 @@ const TopThreeRanking = ({ users, currentUserId }: { users: RankingUser[], curre
       <div className="flex flex-col items-center">
         <div className={`${getPositionClass(1)} rounded-xl flex flex-col items-center justify-center mb-2`}>
           <p className="text-2xl font-bold text-cyan_text mb-2">2</p>
-          <img src={topThree[1]?.avatar || avatar} 
-                className="w-12 h-12 rounded-full mb-2" 
-                alt="Second place" />
+          <img
+            src={topThree[1]?.avatar_url || avatar} 
+            className="w-16 h-16 rounded-full mb-2" 
+            alt="Second place" />
           <FaTrophy className="text-silver text-3xl" />
         </div>
         <div className="text-center">
@@ -60,9 +54,10 @@ const TopThreeRanking = ({ users, currentUserId }: { users: RankingUser[], curre
       <div className="flex flex-col items-center">
         <div className={`${getPositionClass(0)} rounded-xl flex flex-col items-center justify-center mb-2`}>
           <p className="text-3xl font-bold text-cyan_text mb-2">1</p>
-          <img src={topThree[0]?.avatar || avatar} 
-                className="w-16 h-16 rounded-full mb-2" 
-                alt="First place" />
+          <img
+            src={topThree[0]?.avatar_url || avatar} 
+            className="w-20 h-20 rounded-full mb-2" 
+            alt="First place" />
           <FaTrophy className="text-gold text-4xl" />
         </div>
         <div className="text-center">
@@ -78,9 +73,10 @@ const TopThreeRanking = ({ users, currentUserId }: { users: RankingUser[], curre
       <div className="flex flex-col items-center">
         <div className={`${getPositionClass(2)} rounded-xl flex flex-col items-center justify-center mb-2`}>
           <p className="text-xl font-bold text-cyan_text mb-2">3</p>
-          <img src={topThree[2]?.avatar || avatar} 
-                className="w-12 h-12 rounded-full mb-2" 
-                alt="Third place" />
+          <img
+            src={topThree[2]?.avatar_url || avatar} 
+            className="w-16 h-16 rounded-full mb-2" 
+            alt="Third place" />
           <FaTrophy className="text-bronze text-2xl" />
         </div>
         <div className="text-center">
@@ -96,7 +92,7 @@ const TopThreeRanking = ({ users, currentUserId }: { users: RankingUser[], curre
 };
 
 export default function Ranking() {
-  const { level } = useOutletContext<{ level: string }>();
+  const { level, profileUpdated } = useOutletContext<{ level: string, profileUpdated: number; }>();
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
   const [overallRanking, setOverallRanking] = useState<RankingUser[]>([]);
   const [levelRanking, setLevelRanking] = useState<RankingUser[]>([]);
@@ -110,7 +106,7 @@ export default function Ranking() {
       setCurrentUserId(data.current_user_id);
     };
     fetchOverallRanking();
-  }, []);
+  }, [profileUpdated]);
 
   // Fetch level ranking
   useEffect(() => {
@@ -119,7 +115,7 @@ export default function Ranking() {
       setLevelRanking(data.rankings);
     };
     fetchLevelRanking();
-  }, [level, period]);
+  }, [level, period, profileUpdated]);
 
   const RankingTable = ({ data, currentUserId }: { data: RankingUser[], currentUserId: number }) => {
     const currentUserIndex = data.findIndex(user => user.id === currentUserId);
@@ -141,7 +137,7 @@ export default function Ranking() {
                 </div>
                 <div className="col-span-7 flex items-center gap-3">
                   <img 
-                    src={user.avatar || avatar} 
+                    src={user.avatar_url || avatar} 
                     alt={user.username} 
                     className="w-10 h-10 rounded-full object-cover border-2 border-cyan_pastel"
                   />
@@ -170,7 +166,7 @@ export default function Ranking() {
                 </div>
                 <div className="col-span-7 flex items-center gap-3">
                   <img 
-                    src={data[currentUserIndex].avatar || avatar} 
+                    src={data[currentUserIndex].avatar_url || avatar} 
                     alt={data[currentUserIndex].username} 
                     className="w-10 h-10 rounded-full object-cover border-2 border-cyan_pastel"
                   />
