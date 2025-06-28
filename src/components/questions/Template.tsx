@@ -6,7 +6,6 @@ import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutl
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { Button } from "@mui/material";
 import { AudioFile, Question, updateDailyPoint, updateLessonStatus, updateUserPoint } from "../../services/api";
-import { fetchAudioFiles } from "../../services/AudioService";
 import { getMeaningForQuestion } from "../../services/questionService";
 import { LessonMeaning } from "../../services/api";
 import Choice from "./Choice";
@@ -24,9 +23,10 @@ type TemplateProps = {
   lessonId: number;
   lessonMeanings?: LessonMeaning[];
   practice_mode: "phrase" | "translate" | "listen" | "test";
+  audioFiles?: AudioFile[];
 };
 
-export default function Template({ questions, lessonId, lessonMeanings, practice_mode }: TemplateProps) {
+export default function Template({ questions, lessonId, lessonMeanings, practice_mode, audioFiles = [] }: TemplateProps) {
   const TOTAL_QUESTIONS = questions.length;
   const MAX_WRONG_ANSWERS = Math.floor(TOTAL_QUESTIONS * 0.25);
   const navigate = useNavigate();
@@ -35,8 +35,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
   const location = useLocation();
   const mode = location.pathname.includes("translate") ? "translate" : "listen";
 
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const { stopAudio } = useAudio();
+  const { playAudio, stopAudio  } = useAudio();
 
   const { lessonLevelMap } = useLessonLevelMap();
   const currentLevel = lessonLevelMap.get(lessonId);
@@ -49,10 +48,33 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
     setAnswer,
     checkAnswer,
   } = useQuestionChecker(questions, "practice");
-
+  
   useEffect(() => {
-    fetchAudioFiles().then(setAudioFiles);
-  }, []);
+    if (practice_mode === "listen" && audioFiles.length > 0 && questions[currentSlide]) {
+      const currentQuestion = questions[currentSlide];
+      
+      // Tìm audio file phù hợp với câu hỏi hiện tại
+      let audioFile: AudioFile | null = null;
+      
+      if (currentQuestion.example_id) {
+        audioFile = audioFiles.find(
+          file => file.audio_type === "example" && file.example_id === currentQuestion.example_id
+        ) || null;
+      }
+
+      // Phát audio sau một khoảng delay ngắn
+      if (audioFile?.audio_url) {
+        const timeoutId = setTimeout(() => {
+          stopAudio(); // Dừng audio cũ trước
+          playAudio(audioFile.audio_url);
+        }, 500); // Delay 500ms để đảm bảo UI đã render
+
+        return () => {
+          clearTimeout(timeoutId);
+        };
+      }
+    }
+  }, [currentSlide, audioFiles, practice_mode, questions, playAudio, stopAudio]);
 
   useEffect(() => {
     stopAudio();
@@ -93,20 +115,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
       // state: fromLessonSection ? { fromLessonSection: true } : undefined
     };
   };
-
-  // useEffect(() => {
-  //   fetchAudioFiles().then(setAudioFiles);
-  // }, []);
-
-  // // Dừng audio khi kiểm tra đáp án
-  // useEffect(() => {
-  //   const currentQuestion = questions[currentSlide];
-  //   if (isChecked(currentQuestion?.id) && globalAudioRef.current) {
-  //     globalAudioRef.current.pause();
-  //     globalAudioRef.current.currentTime = 0;
-  //     setIsPlaying(false);
-  //   }
-  // }, [isChecked, currentSlide]);
 
   const [showResult, setShowResult] = useState(false);
   const [isAllAnswered, setIsAllAnswered] = useState(false);
@@ -236,7 +244,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
           <div key={question.id} className="p-4">
             {question.question_type === "choice" && (
               <Choice
-                questionId={question.id}
                 questionTitle={question.question}
                 choices={question.choices}
                 selectedId={userAnswers[question.id] as number}
@@ -244,6 +251,9 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 checkResult={results[question.id]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
+                vocabId={question.vocabulary_id as number}
+                phraseId={question.phrase_id as number}
+                exampleId={question.example_id as number}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="practice"
               />
@@ -251,7 +261,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
 
             {question.question_type === "matching" && (
               <Match
-                questionId={question.id}
                 questionTitle={question.question}
                 choices={question.choices}
                 selectedIds={userAnswers[question.id] as number[]}
@@ -259,6 +268,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 checkResult={results[question.id]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
+                phraseId={question.phrase_id as number}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="practice"
               />
@@ -266,7 +276,6 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
 
             {question.question_type === "sorting" && (
               <Sort
-                questionId={question.id}
                 questionTitle={question.question}
                 tokens={question.example_tokens || []}
                 selectedIds={userAnswers[question.id] as number[]}
@@ -274,6 +283,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
                 checkResult={results[question.id]}
                 onSelect={(id) => setAnswer(question.id, id)}
                 audioFiles={audioFiles}
+                exampleId={question.example_id as number}
                 mode={mode}
                 currentQuestionId={question.id}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
@@ -282,13 +292,13 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
             )}
             {question.question_type === "fill_blank" && (
               <FillBlank
-                questionId={question.id}
                 questionTitle={question.question}
                 isChecked={isChecked(question.id)}
                 checkResult={results[question.id]}
                 onSelect={(answer) => setAnswer(question.id, answer)}
                 correct_answers={question.correct_answers}
                 audioFiles={audioFiles}
+                exampleId={question.example_id as number}
                 mode={mode}
                 meaning={getMeaningForQuestion(question, lessonMeanings)?.meaning}
                 doMode="practice"

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchQuestionsByLesson, Question } from "../services/api";
+import { AudioFile, fetchQuestionsByLesson, Question } from "../services/api";
 import { useParams } from "react-router-dom";
 import Template from "../components/questions/Template";
 import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
+import { fetchAudioFiles } from "../services/AudioService";
 
 const PracticeTranslate = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -10,19 +11,23 @@ const PracticeTranslate = () => {
   useMarkStudiedByLessonId(lessonIdNumber);
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!lessonIdNumber) return;
-
     const loadQuestions = async () => {
-      setLoading(true);
-      const data = await fetchQuestionsByLesson(lessonIdNumber);
-      const filtered = data.filter((q) =>
-        q.question_type === "sorting" || q.question_type === "fill_blank"
-      );
-      setQuestions(filtered);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const questionsData = await fetchQuestionsByLesson(lessonIdNumber, "example");
+        setQuestions(questionsData),
+        fetchAudioFiles().then(setAudioFiles)
+      } catch (error) {
+        console.error("Error loading questions:", error);
+        setQuestions([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadQuestions();
@@ -38,7 +43,12 @@ const PracticeTranslate = () => {
   if (questions.length === 0) return <p className="h-[60vh] flex justify-center text-cyan_text text-2xl">Không có câu hỏi nào.</p>;
 
   return (
-    <Template questions={questions} lessonId={lessonIdNumber} practice_mode="translate"/>
+    <Template
+      questions={questions}
+      lessonId={lessonIdNumber}
+      practice_mode="translate"
+      audioFiles={audioFiles}
+    />
   );
 };
 

@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import { useAudio } from "../../contexts/AudioContext";
 
 type FillBlankProps = {
-  questionId?: number;
   questionTitle: string;
   savedAnswer?: string;
   onSelect: (answer: string) => void;
@@ -12,13 +12,14 @@ type FillBlankProps = {
   checkResult?: "correct" | "incorrect" | null;
   correct_answers: string[] | null;
   audioFiles: AudioFile[];
+  exampleId?: number;
   mode: "translate" | "listen";
   meaning?: string;
   doMode: "practice" | "test";
+  disableResultAudio?: boolean;
 };
 
 export default function FillBlank({
-  questionId,
   questionTitle,
   savedAnswer,
   onSelect,
@@ -26,28 +27,19 @@ export default function FillBlank({
   checkResult,
   correct_answers = [],
   audioFiles,
+  exampleId,
   mode,
   meaning,
-  doMode
+  doMode,
+  disableResultAudio
 }: FillBlankProps) {
   const [answer, setAnswer] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const playAudio = (url: string) => {
-    if (currentAudioRef.current) {
-      currentAudioRef.current.pause();
-      currentAudioRef.current.currentTime = 0;
-    }
-
-    const audio = new Audio(url);
-    currentAudioRef.current = audio;
-    audio.volume = 1;
-    audio.play();
-  };
+  const { playAudio, stopAudio } = useAudio();
 
   const questionAudio = audioFiles.find(
-    (file) => file.audio_type === "example"
+    (file) => file.audio_type === "example" && file.example_id === exampleId
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -87,22 +79,12 @@ export default function FillBlank({
     }
   }, [answer]);
 
-  useEffect(() => {
-    return () => {
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause();
-        currentAudioRef.current = null;
-      }
-    };
-  }, []);
-
-  // useEffect(() => {
-  //   if (mode === "listen") {
-  //     if (questionAudio) {
-  //       playAudio(questionAudio.audio_url);
-  //     }
-  //   }
-  // }, [ audioFiles]);
+  const handlePlayAudio = () => {
+    stopAudio();
+    if (questionAudio?.audio_url) {
+      playAudio(questionAudio.audio_url);
+    }
+  };
 
   return (
     <div className="w-full max-w-3xl mx-auto text-center mt-6">
@@ -119,7 +101,7 @@ export default function FillBlank({
           {(() => {
             return questionAudio ? (
               <div
-                onClick={() => playAudio(questionAudio.audio_url)}
+                onClick={() => handlePlayAudio()}
                 className="ml-[10%] mb-10 w-24 h-24 mx-auto cursor-pointer text-cyan_text hover:scale-110 transition-transform duration-200"
               >
                 <VolumeUpIcon style={{ width: "100%", height: "100%" }} />
@@ -151,6 +133,7 @@ export default function FillBlank({
           }
           resultAudioUrl={questionAudio?.audio_url}
           meaning={meaning}
+          disableResultAudio={disableResultAudio}
         />
       )}
     </div>

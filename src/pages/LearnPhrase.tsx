@@ -5,7 +5,7 @@ import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import VocabCard from "../components/learn-phrase/VocabCard";
 import PhraseCard from "../components/learn-phrase/PhraseCard";
-import { fetchVocabulariesByLesson, Vocabulary, Phrase } from "../services/api";
+import { fetchVocabulariesByLesson, Vocabulary, Phrase, AudioFile } from "../services/api";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
 import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
@@ -13,6 +13,8 @@ import doneTicker from "../assets/doneTicker.png";
 import { Slide } from "../components/Slide";
 import ex_choice from "../assets/ex_choice.png";
 import ex_match from "../assets/ex_match.png";
+import { useAudio } from "../contexts/AudioContext";
+import { fetchAudioFiles, getAudioByType } from "../services/AudioService";
 
 const LearnPhrase: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +31,28 @@ const LearnPhrase: React.FC = () => {
   const [vocabList, setVocabList] = useState<Vocabulary[]>([]);
   const [flashcards, setFlashcards] = useState<{ type: "vocab" | "phrase"; data: Vocabulary | Phrase }[]>([]);
   const [shuffledFlashcards, setShuffledFlashcards] = useState<{ type: "vocab" | "phrase"; data: Vocabulary | Phrase }[]>([]);
+  const currentCard = shuffledFlashcards[currentIndex];
+
+  const { playAudio, stopAudio  } = useAudio();
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+  
+  useEffect(() => {
+    fetchAudioFiles().then(setAudioFiles);
+  }, []);
+
+  const vocabAudios = getAudioByType(audioFiles, "vocab");
+  const phraseAudios = getAudioByType(audioFiles, "phrase");
+
+  const handlePlayVocabAudio = (vocabId: number) => {
+    const audio = vocabAudios.find(f => f.vocabulary_id === vocabId);
+    if (audio) playAudio(audio.audio_url);
+  };
+
+  // Hàm phát audio cho phrase
+  const handlePlayPhraseAudio = (phraseId: number) => {
+    const audio = phraseAudios.find(f => f.phrase_id === phraseId);
+    if (audio) playAudio(audio.audio_url);
+  };
 
   const handleTabChange = (_event: React.SyntheticEvent, newIndex: number) => {
     setFlipped({});
@@ -46,6 +70,9 @@ const LearnPhrase: React.FC = () => {
         setVocabList(vocabList);
         setFlashcards(flashcards);
         setShuffledFlashcards([...flashcards]);
+        setCurrentIndex(0);
+        setFlipped({});
+        stopAudio();
       } catch (error) {
         console.error("Lỗi khi fetch data:", error);
       }
@@ -88,6 +115,22 @@ const LearnPhrase: React.FC = () => {
       return { ...prev, [key]: !prev[key] };
     });
   };  
+
+  useEffect(() => {
+    if (!currentCard) return;
+    const key = `${currentCard.type}_${currentCard.data.id}`;
+    if (flipped[key]) {
+      if (currentCard.type === "vocab") {
+        handlePlayVocabAudio(currentCard.data.id);
+      } else if (currentCard.type === "phrase") {
+        handlePlayPhraseAudio(currentCard.data.id);
+      }
+    }
+  }, [flipped]);
+
+  useEffect(() => {
+    stopAudio();
+  }, [currentIndex, stopAudio]);
   
   const handleNext = () => {
     setFlipped({});
@@ -101,16 +144,24 @@ const LearnPhrase: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const currentCard = flashcards[currentIndex];
       if (event.key === "ArrowLeft" && currentIndex > 0) {
         handlePrev();
       } else if (event.key === "ArrowRight" && currentIndex < flashcards.length - 1) {
         handleNext();
-      } else if (event.key === "ArrowUp") {
-        const currentCard = flashcards[currentIndex];
+      } else if (event.key === "ArrowUp") {     
         if (currentCard.type === "vocab") {
           handleFlip("vocab", currentCard.data.id);
         } else {
           handleFlip("phrase", currentCard.data.id);
+        }
+      } else if (event.key === "ArrowDown") {
+        // Phát audio cho card hiện tại
+        if (!currentCard) return;
+        if (currentCard.type === "vocab") {
+          handlePlayVocabAudio(currentCard.data.id);
+        } else if (currentCard.type === "phrase") {
+          handlePlayPhraseAudio(currentCard.data.id);
         }
       }
     };
@@ -221,12 +272,19 @@ const LearnPhrase: React.FC = () => {
                   <VocabCard
                     meanings={[]} flipped={flipped[`vocab_${shuffledFlashcards[currentIndex].data.id}`]}
                     onFlip={() => handleFlip("vocab", shuffledFlashcards[currentIndex].data.id)}
+                    playAudio={handlePlayVocabAudio}
                     {...(shuffledFlashcards[currentIndex].data as Vocabulary)}                  />
                 ) : (
                   <PhraseCard
                     flipped={flipped[`phrase_${shuffledFlashcards[currentIndex].data.id}`]}
                     onFlip={() => handleFlip("phrase", shuffledFlashcards[currentIndex].data.id)}
-                    {...(shuffledFlashcards[currentIndex].data as Phrase)}
+                    playAudio={handlePlayPhraseAudio}
+                    {
+                      ...{
+                        ...(shuffledFlashcards[currentIndex].data as Phrase),
+                        phrase_type: (shuffledFlashcards[currentIndex].data as Phrase).phrase_type ?? ""
+                      }
+                    }
                   />
                 )
               ) : null

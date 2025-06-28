@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useQuestionAudio } from "../../hooks/useQuestionAudio";
 
 type ChoiceProps = {
-  questionId?: number;
   questionTitle: string;
   choices: { id: number; choice: string, is_correct?: boolean }[];
   onSelect: (id: number) => void;
@@ -13,12 +12,15 @@ type ChoiceProps = {
   checkResult?: "correct" | "incorrect" | null;
   isChecked?: boolean;
   audioFiles: AudioFile[];
+  vocabId?: number;
+  phraseId?: number;
+  exampleId?: number;
   meaning?: string;
   doMode: "practice" | "test";
+  disableResultAudio?: boolean;
 };
 
 export default function Choice({
-  questionId,
   questionTitle, 
   choices, 
   savedAnswer,
@@ -27,14 +29,18 @@ export default function Choice({
   checkResult,
   isChecked = false,
   audioFiles,
+  vocabId,
+  phraseId,
+  exampleId,
   meaning,
-  doMode
+  doMode,
+  disableResultAudio
 }: ChoiceProps) {
-  const { questionAudio } = useQuestionAudio({
-    audioFiles,
-    questionId,
-    autoPlay: false
-  });
+  const questionAudio = audioFiles.find(
+    (file) => (file.audio_type === "vocab" && file.vocabulary_id === vocabId) ||
+              (file.audio_type === "phrase" && file.phrase_id === phraseId) ||               
+              (file.audio_type === "example" && file.example_id === exampleId)
+  );
 
   useEffect(() => {
     if (savedAnswer !== undefined && selectedId === null) {
@@ -109,6 +115,7 @@ export default function Choice({
           correctText={choices.find(c => c.is_correct)?.choice}
           resultAudioUrl={questionAudio?.audio_url}
           meaning={meaning}
+          disableResultAudio={disableResultAudio}
         />
       )}
     </div>

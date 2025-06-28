@@ -46,6 +46,8 @@ export interface Phrase {
   prefix?: string;
   suffix?: string;
   meaning: string;
+  phrase_type?: string;
+  furigana?: string;
 }
 
 export interface Flashcard {
@@ -288,43 +290,18 @@ export const fetchVocabulariesByLesson = async (lessonId: string | undefined): P
 };
 
 // Fetch câu hỏi theo lesson
-export const fetchQuestionsByLesson = async (lessonId: number): Promise<Question[]> => {
+export const fetchQuestionsByLesson = async (lessonId: number, practiceType?: string): Promise<Question[]> => {
   try {
     const response = await api.get(`/questions`, {
       params: {
-        lesson_id: lessonId
+        lesson_id: lessonId,
+        practice_type: practiceType
       }
     });
-
-    const rawQuestions = response.data as any[];
-
-    const questions: Question[] = rawQuestions.map((q) => {
-      if (q.question_type === "sorting") {
-        return {
-          ...q,
-          tokens: q.example_tokens
-        } as QuestionSortingType;
-      }
-
-      if (q.question_type === "choice" || q.question_type === "matching") {
-        return {
-          ...q,
-          choices: q.choices
-        } as QuestionChoiceType;
-      }
-
-      if (q.question_type === "sorting") {
-        return {
-          ...q
-        } as QuestionFillBlankType;
-      }
-
-      return q;
-    });
-    return questions;
+    return response.data;
   } catch (error) {
-    console.error("Error fetching phrase questions:", error);
-    return [];
+    console.error("Error fetching questions:", error);
+    throw error;
   }
 };
 

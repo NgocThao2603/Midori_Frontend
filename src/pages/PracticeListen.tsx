@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchLessonMeaningsByLesson, fetchQuestionsByLesson, LessonMeaning, Question } from "../services/api";
+import { AudioFile, fetchLessonMeaningsByLesson, fetchQuestionsByLesson, LessonMeaning, Question } from "../services/api";
 import { useParams } from "react-router-dom";
 import Template from "../components/questions/Template";
 import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
+import { fetchAudioFiles } from "../services/AudioService";
 
 const PracticeListen = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -12,6 +13,7 @@ const PracticeListen = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [lessonMeanings, setLessonMeanings] = useState<LessonMeaning[]>([]);
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
 
   useEffect(() => {
     if (!lessonIdNumber) return;
@@ -20,14 +22,12 @@ const PracticeListen = () => {
       try {
         setLoading(true);
         const [questionsData, meaningsData] = await Promise.all([
-          fetchQuestionsByLesson(lessonIdNumber),
-          fetchLessonMeaningsByLesson(lessonIdNumber)
+          fetchQuestionsByLesson(lessonIdNumber, "example"),
+          fetchLessonMeaningsByLesson(lessonIdNumber),
+          fetchAudioFiles().then(setAudioFiles)
         ]);
         
-        const filtered = questionsData.filter((q) =>
-          q.question_type === "sorting" || q.question_type === "fill_blank"
-        );
-        setQuestions(filtered);
+        setQuestions(questionsData);
         setLessonMeanings(meaningsData || []);
       } catch (error) {
         console.error("Error loading questions or meanings:", error);
@@ -51,7 +51,13 @@ const PracticeListen = () => {
   if (questions.length === 0) return <p className="h-[60vh] flex justify-center text-cyan_text text-2xl">Không có câu hỏi nào.</p>;
 
   return (
-    <Template questions={questions} lessonId={lessonIdNumber} lessonMeanings={lessonMeanings} practice_mode="listen"/>
+    <Template
+      questions={questions}
+      lessonId={lessonIdNumber}
+      lessonMeanings={lessonMeanings}
+      practice_mode="listen"
+      audioFiles={audioFiles}
+    />
   );
 };
 
