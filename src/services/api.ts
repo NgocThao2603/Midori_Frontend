@@ -17,6 +17,21 @@ api.interceptors.request.use((config) => {
 
 export default api;
 
+export interface UserProfile {
+  email: string;
+  username: string;
+  dob: string;
+  phone: string;
+  avatar_url: string;
+};
+
+export interface RankingUser {
+  id: number;
+  username: string;
+  point: number;
+  avatar_url?: string;
+}
+
 export interface Chapter {
   id: number;
   title: string;
@@ -511,5 +526,38 @@ export const getLevelRanking = async (level: string, period: "day" | "week" | "m
   } catch (error) {
     console.error("Error fetching level ranking:", error);
     throw error;
+  }
+};
+
+export const getProfile = async () => {
+  try {
+    const response = await api.get("/users");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    throw error;
+  }
+}
+
+export const updateProfile = async (data: {
+  username?: string;
+  dob?: string;
+  phone?: string;
+  avatar_url?: string;
+  password?: string;
+  current_password?: string;
+}) => {
+  try {
+    const response = await api.patch("/users", {
+      user: data,
+    });
+    return response.data;
+  } catch (error: any) {
+    const msg =
+      error?.response?.data?.error ||
+      error?.response?.data?.message ||
+      error?.message ||
+      "Cập nhật thất bại";
+    throw new Error(msg);
   }
 };

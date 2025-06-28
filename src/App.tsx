@@ -7,6 +7,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { AudioProvider } from "./contexts/AudioContext";
 import { LessonLevelProvider } from "./contexts/LessonLevelContext";
 import { UserActivityProvider } from "./contexts/UserActivityContext";
+import { LessonEntryProvider } from "./contexts/LessonEntryContext";
 
 const theme = createTheme({
   components: {
@@ -30,12 +31,14 @@ const App = () => {
       <AuthProvider>
         <BrowserRouter>
           <LessonLevelProvider>
-            <UserActivityProvider>
-              <AudioProvider>
-                <AppRoutes/>
-                <ToastContainer />
-              </AudioProvider>
-            </UserActivityProvider>
+            <LessonEntryProvider>
+              <UserActivityProvider>
+                <AudioProvider>
+                  <AppRoutes/>
+                  <ToastContainer />
+                </AudioProvider>
+              </UserActivityProvider>
+            </LessonEntryProvider>            
           </LessonLevelProvider>
         </BrowserRouter>
       </AuthProvider>

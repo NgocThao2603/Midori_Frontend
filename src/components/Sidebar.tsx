@@ -10,13 +10,14 @@ import headphones from "../assets/headphones.png";
 import test from "../assets/test.png";
 import leaderboard from "../assets/leaderboard.png";
 import result from "../assets/result.png";
+import { useLessonEntry } from "../contexts/LessonEntryContext";
 
 const Sidebar = () => {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("");
-
+  const { fromLessonSection, setFromLessonSection } = useLessonEntry();
   const state = location.state as { fromLessonSection?: boolean };
-  const isFromLessonSection = state?.fromLessonSection;
+  const isFromLessonSection = state?.fromLessonSection || fromLessonSection;
 
   // Tách lessonId từ URL nếu có
   const matchLessonId = location.pathname.match(/\/(learn-phrase|translate|listen|test)\/(\d+)/);
@@ -44,7 +45,11 @@ const Sidebar = () => {
       <h1 className="text-secondary ml-2 font-bold text-4xl mb-6">Midori</h1>
       <nav className="flex flex-col gap-2">
         {menuItems.map((item) => (
-          <Link key={item.name} to={item.path}>
+          <Link
+            key={item.name}
+            to={item.path}
+            onClick={() => setFromLessonSection(false)}
+          >
             <Button img={item.icon} text={item.name} active={isFromLessonSection ? item.path === "/home" : location.pathname.startsWith(item.path)}  />
           </Link>
         ))}

@@ -8,6 +8,7 @@ import { LessonStatusProvider } from "../contexts/LessonStatusContext";
 import { useState } from "react";
 import background from "../assets/background.png";
 import ProgressCircle from "../components/statistics/ProgressCircle";
+import { useLessonEntry } from "../contexts/LessonEntryContext";
 
 const getModeFromPath = (
   pathname: string
@@ -28,22 +29,24 @@ const Layout = () => {
   const [level, setLevel] = useState<string>("N2");
   const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
   const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
+  const [profileUpdated, setProfileUpdated] = useState(0);
 
+  const { fromLessonSection } = useLessonEntry();
   const state = location.state as { fromLessonSection?: boolean } | null;
-  const displayMode = state?.fromLessonSection ? getModeFromPath(location.pathname) : null;
+  const displayMode = state?.fromLessonSection || fromLessonSection ? getModeFromPath(location.pathname) : null;
   const activeMode = getModeFromPath(location.pathname) // Dung cho phan hien thi lessonStatus trong LessonList theo tung tinh nang
 
   return (
     <LessonStatusProvider>
       <LessonScrollProvider>
         <div className="flex flex-col h-screen w-full">
-          <Header level={level} setLevel={setLevel} isLoggedIn={true}/>
+          <Header level={level} setLevel={setLevel} isLoggedIn={true} profileUpdated={profileUpdated} setProfileUpdated={setProfileUpdated}/>
           {/* Main layout: Sidebar + Content + LessonList */}
           <div className="grid grid-cols-10 w-full">
             <div className="col-span-2 flex-shrink-0">
               <Sidebar />
             </div>
-            <main className="col-span-6 p-6 mt-12 z-10"><Outlet context={{ activeChapterId, level }}/></main>
+            <main className="col-span-6 p-6 mt-12 z-10"><Outlet context={{ activeChapterId, level, profileUpdated, setProfileUpdated, }}/></main>
             <div className="col-span-2 mt-20 mr-10 p-4">
               <div className="fixed">
                 {isHome && (

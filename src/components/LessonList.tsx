@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { List, ListItemButton, ListItemText, Collapse, ListItem } from "@mui/material";
+import { List, ListItemButton, ListItemText, Collapse, ListItem, Button } from "@mui/material";
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useLessonScroll } from "../contexts/LessonScrollContext";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
@@ -136,6 +137,8 @@ const LessonList = ({
     );
     const currentLesson = currentChapter?.lessons.find(l => l.id === numericLessonId);
     if (!currentChapter || !currentLesson) return null;
+    const allLessons = chapters.flatMap(ch => ch.lessons);
+    const nextLesson = allLessons.find(l => l.id === (currentLesson.id + 1));
 
     return (
       <div className="bg-green_pastel rounded-xl p-4 border w-80 mt-6">
@@ -212,6 +215,21 @@ const LessonList = ({
             </div>
           </List>
         </div>
+        {nextLesson && (
+          <div className="flex justify-center">
+            <Button
+              variant="contained"
+              className="flex gap-2 !bg-primary hover:!bg-secondary !text-white !font-bold !text-sm !py-2 !mt-4 !rounded-lg !focus:outline-none"
+              sx={{
+                "&:focus": { outline: "none", boxShadow: "none" },
+              }}
+              onClick={() => navigate(`/learn-phrase/${nextLesson.id}`)}
+            >
+              <ArrowRightAltIcon />
+              Bài tiếp theo
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
