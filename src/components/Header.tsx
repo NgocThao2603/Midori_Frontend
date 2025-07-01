@@ -27,6 +27,7 @@ const Header = ({ level, setLevel, isLoggedIn, profileUpdated, setProfileUpdated
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     setLevel(event.target.value);
+    localStorage.setItem("midori_level", event.target.value);
   };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

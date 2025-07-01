@@ -1,16 +1,17 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { Button, Tabs, Tab } from "@mui/material";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
 import doneTicker from "../assets/doneTicker.png"; 
 import point from "../assets/point.png";
-import { getTests, TestInfo, fetchTestAttemptsByTestId, TestAttempt, createTestAttempt } from "../services/api";
+import { getTests, TestInfo, fetchTestAttemptsByTestId, TestAttempt, createTestAttempt, fetchChapters } from "../services/api";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { Select, MenuItem, FormControl, TablePagination } from "@mui/material";
 import { StatusBadge } from "../components/test_attempts/StatusBadge";
 import { formatDuration } from "../services/timeService";
+import { useLessonLevelMap } from "../contexts/LessonLevelContext";
 
 const Test: React.FC = () => {
   const navigate = useNavigate();
@@ -97,6 +98,22 @@ const Test: React.FC = () => {
     }
   };
 
+  const { level } = useOutletContext<{ level: string }>();
+  const { lessonLevelMap, isReady } = useLessonLevelMap();
+
+  useEffect(() => {
+    if (!lessonId || !isReady) return;
+    const lessonLevel = lessonLevelMap.get(Number(lessonId));
+    if (lessonLevel !== level) {
+      fetchChapters(level).then((chapters) => {
+        const firstLessonId = chapters?.[0]?.lessons?.[0]?.id;
+        if (firstLessonId) {
+          navigate(`/test/${firstLessonId}`, { replace: true });
+        }
+      });
+    }
+  }, [level, lessonId, isReady, lessonLevelMap, navigate]);
+
   useEffect(() => {
     if (lessonId) {
       getTests(Number(lessonId)).then((data) => {
@@ -115,7 +132,7 @@ const Test: React.FC = () => {
         }
       });
     }
-  }, [lessonId]);
+  }, [lessonId, level]);
 
   useEffect(() => {
     const fetchTestAttempts = async () => {

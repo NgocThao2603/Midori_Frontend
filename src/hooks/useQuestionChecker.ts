@@ -80,49 +80,92 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
 
     // else if (question.question_type === "sorting") {
     //   const userOrder = Array.isArray(userAnswer) ? userAnswer : [];
-    
-    //   // Lấy danh sách ID theo thứ tự đúng từ token_index
-    //   const correctOrder = (question.example_tokens || [])
+
+    //   const allowedDuplicateSurfaces = ["の", "が", "に", "を", "は", "と", "も", "で", "から", "まで"];
+
+    //   const correctTokens = (question.example_tokens || [])
     //     .filter(t => typeof t.token_index === "number")
-    //     .sort((a, b) => (a.token_index! - b.token_index!))
-    //     .map(t => t.id);
-    
-    //   isCorrect =
-    //     correctOrder.length === userOrder.length &&
-    //     correctOrder.every((id, index) => id === userOrder[index]);
+    //     .sort((a, b) => a.token_index! - b.token_index!);
+
+    //   // Lấy token theo id để so sánh
+    //   const tokenMap = new Map(correctTokens.map(t => [t.id, t]));
+
+    //   // Check chiều dài
+    //   if (correctTokens.length !== userOrder.length) {
+    //     isCorrect = false;
+    //   } else {
+    //     // So sánh từng phần tử theo index
+    //     isCorrect = correctTokens.every((correctToken, index) => {
+    //       const userTokenId = userOrder[index];
+    //       if (typeof userTokenId !== "number") return false;
+    //       const userToken = tokenMap.get(userTokenId);
+
+    //       if (!userToken) return false;
+
+    //       // Nếu là trợ từ có thể trùng, chỉ cần đúng surface
+    //       if (allowedDuplicateSurfaces.includes(correctToken.jp_token)) {
+    //         return correctToken.jp_token === userToken.jp_token;
+    //       }
+
+    //       // Ngược lại phải đúng ID
+    //       return correctToken.id === userTokenId;
+    //     });
+    //   }
     // }
+
     else if (question.question_type === "sorting") {
       const userOrder = Array.isArray(userAnswer) ? userAnswer : [];
-
-      const allowedDuplicateSurfaces = ["の", "が", "に", "を", "は", "と", "も", "で", "から", "まで"];
 
       const correctTokens = (question.example_tokens || [])
         .filter(t => typeof t.token_index === "number")
         .sort((a, b) => a.token_index! - b.token_index!);
 
-      // Lấy token theo id để so sánh
       const tokenMap = new Map(correctTokens.map(t => [t.id, t]));
 
-      // Check chiều dài
       if (correctTokens.length !== userOrder.length) {
         isCorrect = false;
       } else {
-        // So sánh từng phần tử theo index
-        isCorrect = correctTokens.every((correctToken, index) => {
-          const userTokenId = userOrder[index];
-          if (typeof userTokenId !== "number") return false;
-          const userToken = tokenMap.get(userTokenId);
+        isCorrect = true;
 
-          if (!userToken) return false;
+        for (let i = 0; i < correctTokens.length; i++) {
+          const correctToken = correctTokens[i];
 
-          // Nếu là trợ từ có thể trùng, chỉ cần đúng surface
-          if (allowedDuplicateSurfaces.includes(correctToken.jp_token)) {
-            return correctToken.jp_token === userToken.jp_token;
+          const matched = (() => {
+            const userTokenId = userOrder[i];
+            if (typeof userTokenId !== "number") return false;
+            const userToken = tokenMap.get(userTokenId);
+
+            if (!userToken) return false;
+
+            // Nếu giống hệt token (same jp_token, same surface), cho phép hoán đổi vị trí
+            const sameTokens = correctTokens
+              .map((t, idx) => ({ t, idx }))
+              .filter(({ t }) => t.jp_token === correctToken.jp_token);
+
+            if (sameTokens.length > 1) {
+              // Nếu có nhiều token giống nhau → chỉ cần đảm bảo tổng số và nội dung đúng
+              const expectedSurfaces = sameTokens.map(({ t }) => t.jp_token).sort();
+              const actualSurfaces = sameTokens
+                .map(({ t, idx }) => {
+                  const userTokenIdAtIdx = userOrder[idx];
+                  const userToken = typeof userTokenIdAtIdx === "number" ? tokenMap.get(userTokenIdAtIdx) : undefined;
+                  return userToken?.jp_token;
+                })
+                .filter(Boolean)
+                .sort();
+
+              return JSON.stringify(expectedSurfaces) === JSON.stringify(actualSurfaces);
+            }
+
+            // Nếu chỉ có 1 → kiểm tra ID như bình thường
+            return correctToken.id === userTokenId;
+          })();
+
+          if (!matched) {
+            isCorrect = false;
+            break;
           }
-
-          // Ngược lại phải đúng ID
-          return correctToken.id === userTokenId;
-        });
+        }
       }
     }
 

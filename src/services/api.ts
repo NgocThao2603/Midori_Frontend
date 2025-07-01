@@ -44,6 +44,7 @@ export interface Chapter {
 
 export interface Vocabulary {
   id: number;
+  stt: number;
   kanji: string;
   hanviet: string;
   kana: string;
@@ -55,6 +56,7 @@ export interface Vocabulary {
 export interface Phrase {
   id: number;
   vocab_id: number;
+  vocab_stt: number;
   phrase: string;
   main_word: string;
   kana?: string;

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { Button } from "@mui/material";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
@@ -6,6 +6,9 @@ import doneTicker from "../assets/doneTicker.png";
 import { Slide } from "../components/Slide";
 import ex_listen from "../assets/ex_listen.png";
 import ex_listen_fill from "../assets/ex_listen_fill.png";
+import { useLessonLevelMap } from "../contexts/LessonLevelContext";
+import { useEffect } from "react";
+import { fetchChapters } from "../services/api";
 
 const Listen: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +16,23 @@ const Listen: React.FC = () => {
   const { isDoneStatus } = useLessonStatuses();
   const done = lessonId ? isDoneStatus(Number(lessonId), "listen") : false;
   const images = [ex_listen, ex_listen_fill];
+
+  const { level } = useOutletContext<{ level: string }>();
+  const { lessonLevelMap, isReady } = useLessonLevelMap();
+
+  useEffect(() => {
+    if (!lessonId || !isReady) return;
+    const lessonLevel = lessonLevelMap.get(Number(lessonId));
+    if (lessonLevel !== level) {
+      fetchChapters(level).then((chapters) => {
+        const firstLessonId = chapters?.[0]?.lessons?.[0]?.id;
+        if (firstLessonId) {
+          navigate(`/listen/${firstLessonId}`, { replace: true });
+        }
+      });
+    }
+  }, [level, lessonId, isReady, lessonLevelMap, navigate]);
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4 flex flex-col items-center space-y-8">
       <div className="relative w-full max-w-4xl">
