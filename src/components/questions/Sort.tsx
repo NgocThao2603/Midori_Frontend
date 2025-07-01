@@ -117,7 +117,7 @@ export default function Sort({
     const tokenAudio = audioFiles.find(
       (file) => file.audio_type === "example_token" && file.example_token_id === token.id
     );
-    if (tokenAudio) playAudio(tokenAudio.audio_url);
+    if (mode != "listen" && tokenAudio) playAudio(tokenAudio.audio_url);
 
     const isInSelected = selected.some((t) => t.id === token.id);
     if (isInSelected) {

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { Button } from "@mui/material";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
@@ -6,6 +6,9 @@ import doneTicker from "../assets/doneTicker.png";
 import { Slide } from "../components/Slide";
 import ex_translate from "../assets/ex_translate.png";
 import ex_blank from "../assets/ex_blank.png";
+import { useLessonLevelMap } from "../contexts/LessonLevelContext";
+import { useEffect } from "react";
+import { fetchChapters } from "../services/api";
 
 const Translate: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +16,23 @@ const Translate: React.FC = () => {
   const { isDoneStatus } = useLessonStatuses();
   const done = lessonId ? isDoneStatus(Number(lessonId), "translate") : false;
   const images = [ex_translate, ex_blank];
+
+  const { level } = useOutletContext<{ level: string }>();
+  const { lessonLevelMap, isReady } = useLessonLevelMap();
+
+  useEffect(() => {
+    if (!lessonId || !isReady) return;
+    const lessonLevel = lessonLevelMap.get(Number(lessonId));
+    if (lessonLevel !== level) {
+      fetchChapters(level).then((chapters) => {
+        const firstLessonId = chapters?.[0]?.lessons?.[0]?.id;
+        if (firstLessonId) {
+          navigate(`/translate/${firstLessonId}`, { replace: true });
+        }
+      });
+    }
+  }, [level, lessonId, isReady, lessonLevelMap, navigate]);
+  
   return (
     <div className="w-full max-w-4xl mx-auto p-4 flex flex-col items-center space-y-8">
       <div className="relative w-full max-w-4xl">

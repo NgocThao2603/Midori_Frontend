@@ -26,7 +26,7 @@ const Layout = () => {
   const isHome = location.pathname === "/home";
   const isStatistic = location.pathname === "/statistic";
   const isRanking = location.pathname === "/ranking";
-  const [level, setLevel] = useState<string>("N2");
+  const [level, setLevel] = useState<string>(() => localStorage.getItem("midori_level") || "N3");
   const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
   const [calendarExpanded, setCalendarExpanded] = useState<boolean>(false);
   const [profileUpdated, setProfileUpdated] = useState(0);

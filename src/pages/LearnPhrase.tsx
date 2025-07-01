@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { Tabs, Tab, Button } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Shuffle } from "@mui/icons-material";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import VocabCard from "../components/learn-phrase/VocabCard";
 import PhraseCard from "../components/learn-phrase/PhraseCard";
-import { fetchVocabulariesByLesson, Vocabulary, Phrase, AudioFile } from "../services/api";
+import { fetchVocabulariesByLesson, Vocabulary, Phrase, AudioFile, fetchChapters } from "../services/api";
 import quoteIcon from "../assets/quote-icon.png";
 import { useLessonStatuses } from "../contexts/LessonStatusContext";
 import { useMarkStudiedByLessonId } from "../hooks/useMarkStudiedByLessonId";
@@ -15,9 +15,11 @@ import ex_choice from "../assets/ex_choice.png";
 import ex_match from "../assets/ex_match.png";
 import { useAudio } from "../contexts/AudioContext";
 import { fetchAudioFiles, getAudioByType } from "../services/AudioService";
+import { useLessonLevelMap } from "../contexts/LessonLevelContext";
 
 const LearnPhrase: React.FC = () => {
   const navigate = useNavigate();
+  const { level } = useOutletContext<{ level: string }>();
   const { lessonId } = useParams();
   const lessonIdNum = lessonId ? Number(lessonId) : undefined;
   useMarkStudiedByLessonId(lessonIdNum);
@@ -60,6 +62,21 @@ const LearnPhrase: React.FC = () => {
     setCurrentIndex(0);
   };
 
+  const { lessonLevelMap, isReady } = useLessonLevelMap();
+
+  useEffect(() => {
+    if (!lessonId || !isReady) return;
+    const lessonLevel = lessonLevelMap.get(Number(lessonId));
+    if (lessonLevel !== level) {
+      fetchChapters(level).then((chapters) => {
+        const firstLessonId = chapters?.[0]?.lessons?.[0]?.id;
+        if (firstLessonId) {
+          navigate(`/learn-phrase/${firstLessonId}`, { replace: true });
+        }
+      });
+    }
+  }, [level, lessonId, isReady, lessonLevelMap, navigate]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!lessonId) return;
@@ -79,7 +96,7 @@ const LearnPhrase: React.FC = () => {
     };
 
     fetchData();
-  }, [lessonId]);
+  }, [lessonId, level]);
 
   const shuffleFlashcards = () => {
     if (!vocabList || vocabList.length === 0) {
@@ -236,7 +253,7 @@ const LearnPhrase: React.FC = () => {
                   className={`px-6 py-2 border border-cyan_border rounded-2xl text-cyan_text bg-cyan_pastel text-lg font-semibold opacity-100 hover:border-transparent focus:outline-none 
                     ${isActive ? "bg-green_pastel text-secondary border border-green_border font-bold" : ""}`}
                 >
-                  {vocab.id} {vocab.kanji}
+                  {vocab.stt} {vocab.kanji}
                 </button>
               );
             })}

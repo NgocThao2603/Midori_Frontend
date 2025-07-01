@@ -6,6 +6,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 interface PhraseCardProps {
   id: number;
   vocab_id: number;
+  vocab_stt: number;
   phrase: string;
   main_word: string;
   prefix?: string;
@@ -30,6 +31,7 @@ const phraseTypeColors: Record<string, string> = {
 const PhraseCard: React.FC<PhraseCardProps> = ({
   id,
   vocab_id,
+  vocab_stt,
   phrase,
   main_word,
   prefix,
@@ -48,7 +50,7 @@ const PhraseCard: React.FC<PhraseCardProps> = ({
         className="relative w-64 h-96 px-4 flex flex-col justify-center items-center rounded-xl border-2 bg-white text-cyan_text cursor-pointer" 
         onClick={() => onFlip(id)}
       >
-        <p className="absolute top-4 left-6 text-2xl font-bold">{vocab_id}</p>
+        <p className="absolute top-4 left-6 text-2xl font-bold">{vocab_stt}</p>
         <p className="text-4xl font-bold">{phrase}</p>
         <div 
           className="absolute -bottom-8 items-center bg-cyan_pastel border border-cyan_border p-4 rounded-full"
@@ -66,7 +68,7 @@ const PhraseCard: React.FC<PhraseCardProps> = ({
         onClick={() => onFlip(id)}
       >
         <div className="absolute top-4 left-6 right-2 flex justify-between items-center">
-          <p className="text-2xl font-bold">{vocab_id}</p>
+          <p className="text-2xl font-bold">{vocab_stt}</p>
           <Tag color={phraseTypeColors[phrase_type] || "default"} className="text-lg px-3 py-1 rounded-md">{phrase_type}</Tag>
         </div>
         {furigana && <p className="text-lg text-gray-600 mt-2">{furigana}</p>}

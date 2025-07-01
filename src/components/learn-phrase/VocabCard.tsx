@@ -5,6 +5,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 interface VocabCardProps {
   id: number;
+  stt: number;
   kanji: string;
   hanviet: string;
   kana: string;
@@ -20,12 +21,14 @@ const wordTypeColors: Record<string, string> = {
   "Động từ": "blue",
   "Động từ ghép": "cyan",
   "Tính từ": "volcano",
+  "Phó từ": "purple",
   "Phó từ/ Liên từ": "purple",
   "Phó từ/ Liên thể từ": "purple",
+  "Phó từ/ Liên (thể ) từ": "purple",
   "Katakana": "gold",
 };
 
-const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_type, meanings, flipped, onFlip, playAudio }) => {
+const VocabCard: React.FC<VocabCardProps> = ({ id, stt, kanji, hanviet, kana, word_type, meanings, flipped, onFlip, playAudio }) => {
   return (
     <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
       {/* Front Side */}
@@ -33,7 +36,7 @@ const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_ty
         className="relative w-64 h-96 px-4 flex flex-col justify-center items-center rounded-xl border-2 bg-white text-cyan_text cursor-pointer" 
         onClick={() => onFlip(id)}
       >
-        <p className="absolute top-4 left-6 text-2xl font-bold">{id}</p>
+        <p className="absolute top-4 left-6 text-2xl font-bold">{stt}</p>
         <p className="text-4xl font-bold">{kanji}</p>
         <div 
           className="absolute -bottom-8 items-center bg-cyan_pastel border border-cyan_border p-4 rounded-full"
@@ -51,7 +54,7 @@ const VocabCard: React.FC<VocabCardProps> = ({ id, kanji, hanviet, kana, word_ty
         onClick={() => onFlip(id)}
       >
         <div className="absolute top-4 left-6 right-2 flex justify-between items-center">
-          <p className="text-2xl font-bold">{id}</p>
+          <p className="text-2xl font-bold">{stt}</p>
           <Tag color={wordTypeColors[word_type] || "default"}>{word_type}</Tag>
         </div>
 
