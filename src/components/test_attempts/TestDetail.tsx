@@ -278,9 +278,9 @@ export default function TestTemplate({
               <Choice
                 questionTitle={question.question}
                 choices={question.choices}
-                selectedId={userAnswers[question.id] as number}
+                selectedId={savedAnswers[question.id] as number}
                 isChecked={true}
-                checkResult={userAnswers[question.id] ? results[question.id] : "incorrect"}
+                checkResult={savedAnswers[question.id] ? results[question.id] : "incorrect"}
                 onSelect={() => {}}
                 audioFiles={audioFiles}
                 vocabId={question.vocabulary_id as number}
@@ -297,9 +297,9 @@ export default function TestTemplate({
                 questionTitle={question.question}
                 choices={question.choices}
                 savedAnswer={savedAnswers[question.id] as number[]}
-                selectedIds={userAnswers[question.id] as number[]}
+                selectedIds={savedAnswers[question.id] as number[]}
                 isChecked={true}
-                checkResult={userAnswers[question.id] ? results[question.id] : "incorrect"}
+                checkResult={savedAnswers[question.id] ? results[question.id] : "incorrect"}
                 onSelect={() => {}}
                 audioFiles={audioFiles}
                 phraseId={question.phrase_id as number}
@@ -313,10 +313,10 @@ export default function TestTemplate({
               <Sort
                 questionTitle={question.question}
                 tokens={question.example_tokens || []}
-                selectedIds={userAnswers[question.id] as number[]}
+                selectedIds={savedAnswers[question.id] as number[]}
                 savedAnswer={savedAnswers[question.id] as number[]}
                 isChecked={true}
-                checkResult={userAnswers[question.id] ? results[question.id] : "incorrect"}
+                checkResult={savedAnswers[question.id] ? results[question.id] : "incorrect"}
                 onSelect={() => {}}
                 audioFiles={audioFiles}
                 mode={questionModes[question.id]}
@@ -332,7 +332,7 @@ export default function TestTemplate({
                 questionTitle={question.question}
                 savedAnswer={savedAnswers[question.id] as string}
                 isChecked={true}
-                checkResult={userAnswers[question.id] ? results[question.id] : "incorrect"}
+                checkResult={savedAnswers[question.id] ? results[question.id] : "incorrect"}
                 onSelect={() => {}}
                 correct_answers={question.correct_answers}
                 audioFiles={audioFiles}

@@ -58,17 +58,23 @@ export default function Sort({
   // Shuffle once when question changes
   useEffect(() => {
     setShuffledTokens(shuffleArray(tokens));
-    setSelected([]);
+    // Khong can cung duoc
+    // if (!savedAnswer?.length) {
+    //   setSelected([]);
+    // }
   }, [currentQuestionId]);
 
   // Select from savedAnswer
   useEffect(() => {
-    if (savedAnswer?.length && selected.length === 0) {
+    if (savedAnswer?.length) {
       const selectedTokens = savedAnswer
         .map((id) => tokens.find((t) => t.id === id))
         .filter((t): t is ExampleToken => t !== undefined);
       setSelected(selectedTokens);
       onSelect(savedAnswer);
+    } else {
+      setSelected([]);
+      onSelect([]);
     }
   }, [savedAnswer, tokens]);
 
@@ -91,18 +97,26 @@ export default function Sort({
   };
 
   const getStyle = (id: number, index: number, isSelectedArea: boolean): string => {
-    const correctIds = tokens
-      .filter((t) => typeof t.token_index === "number")
-      .sort((a, b) => a.token_index! - b.token_index!)
-      .map((t) => t.id);
+    // const correctIds = tokens
+    //   .filter((t) => typeof t.token_index === "number")
+    //   .sort((a, b) => a.token_index! - b.token_index!)
+    //   .map((t) => t.id);
 
+    const correctTokens = tokens
+      .filter((t) => typeof t.token_index === "number")
+      .sort((a, b) => a.token_index! - b.token_index!);
+
+    const correctIds = correctTokens.map((t) => t.id);
+    const correctJpTokens = correctTokens.map((t) => t.jp_token);
     let style =
       "bg-white border-gray-300 text-cyan_text hover:border-cyan_border hover:bg-cyan_pastel focus:outline-none";
     if (isSelectedArea && !isChecked) {
       style = "bg-cyan_pastel border-cyan_border text-cyan_text";
     }
     if (isChecked) {
-      if (correctIds[index] === id) {
+      const currentToken = tokens.find((t) => t.id === id);
+      if (correctIds[index] === id ||
+      (currentToken && currentToken.jp_token === correctJpTokens[index])) {
         style = "bg-green_pastel border-secondary text-secondary";
       } else {
         style = "bg-red_pastel border-red_text text-red_text";
