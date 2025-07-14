@@ -2,13 +2,12 @@ import { addMinutes, parseISO } from "date-fns";
 import { Carousel } from "antd";
 import { CarouselRef } from "antd/es/carousel";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import ArrowBackIosOutlined from "@mui/icons-material/ArrowBackIosNewOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { Button } from "@mui/material";
 import { AudioFile, getTestAnswersByTestAttempt, Question, submitTestAttempt, TestAnswer, updateOrCreateTestAnswers } from "../../services/api";
-import { fetchAudioFiles } from "../../services/AudioService";
 import { getMeaningForQuestion } from "../../services/questionService";
 import { LessonMeaning } from "../../services/api";
 import Choice from "./Choice";
@@ -94,6 +93,7 @@ export default function TestTemplate({
     const loadSavedAnswers = async () => {
       try {
         setIsLoadingSavedAnswers(true);
+        void isLoadingSavedAnswers; // dùng biến giả để TypeScript không báo lỗi
         const savedData = await getTestAnswersByTestAttempt(attemptId);
         
         const answersMap: { [key: number]: any } = {};
@@ -232,7 +232,7 @@ export default function TestTemplate({
     const question = questions.find(q => q.id === questionId);
     if (!question) return;
 
-    const answer = userAnswers[questionId];
+    // const answer = userAnswers[questionId];
     checkAnswer(questionId);
     setWaitingToSaveId(questionId); // đánh dấu sẽ lưu sau khi result có
   };

@@ -138,6 +138,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
   useEffect(() => {
     const wrongAnswers = Object.values(results).filter(r => r === "incorrect").length;
     setWrongCount(wrongAnswers);
+    void wrongCount; // dùng biến giả để TypeScript không báo lỗi
     setRemainingChances(MAX_WRONG_ANSWERS - wrongAnswers);
 
     if (wrongAnswers > MAX_WRONG_ANSWERS) {
@@ -148,7 +149,7 @@ export default function Template({ questions, lessonId, lessonMeanings, practice
   const handleShowResults = async () => {
     const correctCount = Object.values(results).filter(r => r === "correct").length;
     const totalQuestions = questions.length;
-    const percentage = (correctCount / totalQuestions) * 100;
+    // const percentage = (correctCount / totalQuestions) * 100;
     const isPassed = correctCount / totalQuestions >= 0.75;
     
     try {

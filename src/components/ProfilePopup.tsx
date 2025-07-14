@@ -242,7 +242,7 @@ export default function ProfilePopup({ open, onClose, user, onSave }: ProfilePop
                   </div>
                   <Grid container spacing={2}>
                     {avatars.map((url) => (
-                      <Grid item key={url}>
+                      <Grid component="div" key={url}>
                         <Avatar
                           src={url}
                           alt={groupName}

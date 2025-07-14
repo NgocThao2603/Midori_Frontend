@@ -25,7 +25,6 @@ type SortProps = {
 export default function Sort({
   questionTitle,
   tokens = [],
-  selectedIds = [],
   savedAnswer,
   onSelect,
   checkResult,
