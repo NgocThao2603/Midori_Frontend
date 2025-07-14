@@ -190,7 +190,7 @@ export interface TestAttempt {
 }
 
 export interface TestAnswer {
-  answer_text: any;
+  answer_text?: string;
   question_id: number;
   answer: string | number | number[];
   is_correct: boolean;
@@ -440,7 +440,7 @@ export const createTestAttempt = async (test_id: number): Promise<TestAttempt> =
   }
 };
 
-export const updateOrCreateTestAnswers = async (testAttemptId: number, answers: TestAnswer[]) => {
+export const updateOrCreateTestAnswers = async (testAttemptId: number, answers: TestAnswer | TestAnswer[]) => {
   try {
     const response = await api.post(`/test_attempts/${testAttemptId}/test_answers/update_or_create`, {
       test_answer: answers,

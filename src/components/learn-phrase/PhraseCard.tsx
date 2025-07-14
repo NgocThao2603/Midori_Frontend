@@ -30,12 +30,8 @@ const phraseTypeColors: Record<string, string> = {
 
 const PhraseCard: React.FC<PhraseCardProps> = ({
   id,
-  vocab_id,
   vocab_stt,
   phrase,
-  main_word,
-  prefix,
-  suffix,
   meaning,
   phrase_type,
   furigana,

@@ -1,7 +1,7 @@
 import { Carousel } from "antd";
 import { CarouselRef } from "antd/es/carousel";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import ArrowBackIosOutlined from "@mui/icons-material/ArrowBackIosNewOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
@@ -44,14 +44,13 @@ export default function TestTemplate({
 
   const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: any }>({});
   const [isLoadingSavedAnswers, setIsLoadingSavedAnswers] = useState(true);
-  const [showResult, setShowResult] = useState(true);
+  // const [showResult, setShowResult] = useState(true);
   useMarkStudiedByLessonId(lessonId);
 
   const {
     userAnswers,
     results,
     isChecked,
-    setAnswer,
     checkAnswer,
     setInitialAnswers,
   } = useQuestionChecker(questions, "practice");
@@ -111,7 +110,7 @@ export default function TestTemplate({
         setInitialAnswers(answersMap);  
         setSavedAnswers(answersMap);
         setSavedQuestions(questionIds);
-
+        void savedQuestions; // dùng biến giả để TypeScript không báo lỗi
       } catch (error) {
         console.error("Failed to load saved answers:", error);
       } finally {

@@ -146,7 +146,7 @@ export function useQuestionChecker(questions: Question[], doMode: "practice" | "
               // Nếu có nhiều token giống nhau → chỉ cần đảm bảo tổng số và nội dung đúng
               const expectedSurfaces = sameTokens.map(({ t }) => t.jp_token).sort();
               const actualSurfaces = sameTokens
-                .map(({ t, idx }) => {
+                .map(({ idx }) => {
                   const userTokenIdAtIdx = userOrder[idx];
                   const userToken = typeof userTokenIdAtIdx === "number" ? tokenMap.get(userTokenIdAtIdx) : undefined;
                   return userToken?.jp_token;

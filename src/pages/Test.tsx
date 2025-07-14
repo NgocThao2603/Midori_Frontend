@@ -62,7 +62,7 @@ const Test: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => {
     setPage(newPage);

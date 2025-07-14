@@ -1,7 +1,6 @@
 import AnswerResult from "../shared/AnswerResult";
 import { AudioFile } from "../../services/api";
 import { useEffect } from "react";
-import { useQuestionAudio } from "../../hooks/useQuestionAudio";
 
 type ChoiceProps = {
   questionTitle: string;

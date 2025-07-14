@@ -37,7 +37,10 @@ const Sidebar = () => {
     const matched = menuItems.find((item) =>
       location.pathname.startsWith(item.path.split("/")[1] === "" ? "/" : `/${item.path.split("/")[1]}`)
     );
-    if (matched) setActiveItem(matched.path);
+    if (matched) {
+      setActiveItem(matched.path);
+      void activeItem; // dùng biến giả để TypeScript không báo lỗi
+    }
   }, [location.pathname]);
 
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { getOverallRanking, getLevelRanking, RankingUser } from "../services/api";
